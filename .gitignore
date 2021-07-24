@@ -1,0 +1,6 @@
+# Visual Studio project
+/.vs/
+
+# Compiled stuff
+bin/
+obj/
