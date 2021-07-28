@@ -1,10 +1,24 @@
-﻿using Meel.Responses;
-using System.Collections.Generic;
+﻿using Meel.Parsing;
+using Meel.Responses;
+using System;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class StatusCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("STATUS completed");
+        private static readonly byte[] readWriteHint = Encoding.ASCII.GetBytes("[READ-WRTIE]");
+        private static readonly byte[] readOnlyHint = Encoding.ASCII.GetBytes("[READ-ONLY]");
+        private static readonly byte[] existsHint = Encoding.ASCII.GetBytes("EXISTS");
+        private static readonly byte[] recentHint = Encoding.ASCII.GetBytes("RECENT");
+        private static readonly byte[] unseenHint = Encoding.ASCII.GetBytes("UNSEEN");
+        private static readonly byte[] argsHint =
+            Encoding.ASCII.GetBytes("Need to specify a mailbox name");
+        private static readonly byte[] authHint =
+            Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
+
         private IMailStation station;
 
         public StatusCommand(IMailStation station)
@@ -12,36 +26,51 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
-                var mailbox = station.SelectMailbox(context.Username, requestOptions);
-                if (!string.IsNullOrEmpty(requestOptions))
+                var name = LexiConstants.AsString(requestOptions);
+                var mailbox = station.SelectMailbox(context.Username, name);
+                if (!requestOptions.IsEmpty)
                 {
-                    response.WriteLine("*", mailbox.NumberOfMessages.ToString(), "EXISTS");
-                    response.WriteLine("*", mailbox.NumberOfRecentMessages.ToString(), "RECENT");
-                    response.WriteLine("*", "OK", $"[UNSEEN {mailbox.FirstUnseenMessage}]");
+                    var lineLength = 10 + existsHint.Length;
+                    response.Allocate((3 * lineLength) + requestId.Length + readWriteHint.Length + completedHint.Length);
+                    var numMessages = LexiConstants.AsSpan(mailbox.NumberOfMessages);
+                    var numRecent = LexiConstants.AsSpan(mailbox.NumberOfMessages);
+                    var firstUnseen = LexiConstants.AsSpan(mailbox.FirstUnseenMessage);
+                    response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
+                    response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
+                    response.Append(ImapResponse.Untagged);
+                    response.AppendSpace();
+                    response.Append(ImapResponse.Ok);
+                    response.AppendSpace();
+                    response.Append(LexiConstants.SquareOpenBrace);
+                    response.Append(unseenHint);
+                    response.AppendSpace();
+                    response.Append(firstUnseen);
+                    response.Append(LexiConstants.SquareCloseBrace);
+                    response.AppendLine();
                     // TODO: Write UID, UIDVALIDITY, FLAGS and PERMANENTFLAGS responses also
-                    var code = (mailbox.CanWrite) ? "[READ-WRITE]" : "[READ-ONLY]";
-                    response.WriteLine(requestId, "OK", code, "SELECT completed");
+                    ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
+                    response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
                 }
                 else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to provide a mailbox name");
+                    response.Allocate(7 + requestId.Length + argsHint.Length);
+                    response.AppendLine(requestId, ImapResponse.Bad, argsHint);
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be Authenticated for this command");
+                response.Allocate(7 + requestId.Length + authHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

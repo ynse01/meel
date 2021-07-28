@@ -1,10 +1,18 @@
-﻿using Meel.Responses;
-using System.Collections.Generic;
+﻿using Meel.Parsing;
+using Meel.Responses;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class CloseCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("CLOSE completed");
+        private static readonly byte[] expungeHint = Encoding.ASCII.GetBytes("EXPUNGE");
+        private static readonly byte[] wrongHint = Encoding.ASCII.GetBytes("No mailbox by that name");
+        private static readonly byte[] modeHint = 
+            Encoding.ASCII.GetBytes("Need to be in SELECTED mode for this command");
+
         private IMailStation station;
 
         public CloseCommand(IMailStation station)
@@ -12,28 +20,36 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Selected) {
                 var deleted = station.ExpungeBySequence(context.SelectedMailbox);
-                foreach(var id in deleted)
+                if (deleted.Count > 0)
                 {
-                    response.WriteLine("*", id.ToString(), "EXPUNGE");
+                    var lineLength = 15 + expungeHint.Length;
+                    response.Allocate((deleted.Count * lineLength) + 6 + requestId.Length + completedHint.Length);
+                    foreach (var id in deleted)
+                    {
+                        response.AppendLine(ImapResponse.Untagged, LexiConstants.AsSpan(id), expungeHint);
+                    }
+                    context.SetSelectedMailbox(null);
+                    response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+                } else
+                {
+                    response.Allocate(7 + requestId.Length + wrongHint.Length);
+                    response.AppendLine(requestId, ImapResponse.No, wrongHint);
                 }
-                context.State = SessionState.Authenticated;
-                response.WriteLine(requestId, "OK", "CLOSE completed");
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be in SELECTED mode for this command");
+                response.Allocate(7 + requestId.Length + modeHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

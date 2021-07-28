@@ -1,10 +1,20 @@
-﻿using Meel.Responses;
-using System.Collections.Generic;
+﻿using Meel.Parsing;
+using Meel.Responses;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class SubscribeCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("SUBSCRIBE completed");
+        private static readonly byte[] cannotHint =
+            Encoding.ASCII.GetBytes("Cannot subscribe to mailbox with that name");
+        private static readonly byte[] missingHint = 
+            Encoding.ASCII.GetBytes("Need to specify the mailbox name to subscribe to");
+        private static readonly byte[] authHint = 
+            Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
+
         private IMailStation station;
 
         public SubscribeCommand(IMailStation station)
@@ -12,35 +22,38 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected) {
-                if (!string.IsNullOrEmpty(requestOptions))
+                if (!requestOptions.IsEmpty)
                 {
-                    var isSubscribed = station.SetSubscription(context.Username, requestOptions, true);
+                    var name = LexiConstants.AsString(requestOptions);
+                    var isSubscribed = station.SetSubscription(context.Username, name, true);
                     if (isSubscribed)
                     {
-                        response.WriteLine(requestId, "OK", "SUBSCRIBE completed");
+                        response.Allocate(0);
+                        response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                     } else
                     {
-                        response.WriteLine(requestId, "NO", "Cannot subscribe to mailbox with that name");
+                        response.Allocate(6 + requestId.Length + cannotHint.Length);
+                        response.AppendLine(requestId, ImapResponse.No, cannotHint);
                     }
                 } else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to specify the mailbox name to subscribe to");
+                    response.Allocate(6 + requestId.Length + missingHint.Length);
+                    response.AppendLine(requestId, ImapResponse.No, missingHint);
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be Authenticated for this command");
+                response.Allocate(7 + requestId.Length + authHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

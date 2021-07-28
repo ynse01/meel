@@ -1,37 +1,45 @@
-﻿using Meel.Responses;
-using System.Collections.Generic;
+﻿using Meel.Parsing;
+using Meel.Responses;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class LoginCommand : IImapCommand
     {
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        private static readonly byte[] acceptHint =
+            Encoding.ASCII.GetBytes("LOGIN accepted");
+        private static readonly byte[] argsHint =
+            Encoding.ASCII.GetBytes("Need to specify username and password");
+        private static readonly byte[] invalidHint =
+            Encoding.ASCII.GetBytes("LOGIN invalid username or password provided");
+        
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
-            if (!string.IsNullOrEmpty(requestOptions))
+            if (!requestOptions.IsEmpty)
             {
-                var parts = requestOptions.Split(' ', 2);
-                if (parts.Length == 2)
+                var index = requestOptions.PositionOf(LexiConstants.Space);
+                if (index.HasValue)
                 {
-                    response.WriteLine(requestId, "OK", "LOGIN accepted");
-                    context.Username = parts[0];
+                    response.AppendLine(requestId, ImapResponse.Ok, acceptHint);
+                    context.Username = LexiConstants.AsString(requestOptions.Slice(0, index.Value));
                     context.State = SessionState.Authenticated;
                 } else
                 {
-                    response.WriteLine(requestId, "NO", "LOGIN invalid username or password provided");
+                    response.AppendLine(requestId, ImapResponse.No, invalidHint);
                     context.State = SessionState.NotAuthenticated;
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to provide username and password");
+                response.Allocate(7 + requestId.Length + argsHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, argsHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

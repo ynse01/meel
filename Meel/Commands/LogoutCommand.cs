@@ -1,22 +1,27 @@
 ﻿using Meel.Responses;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class LogoutCommand : IImapCommand
     {
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        private static readonly byte[] completedHint =
+            Encoding.ASCII.GetBytes("LOGOUT completed");
+        private static readonly byte[] terminationHint = 
+            Encoding.ASCII.GetBytes("MEEL server terminating connection");
+
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
-            response.WriteLine("*", "BYE", "MEEL server terminating connection");
-            response.WriteLine(requestId, "OK", "LOGOUT completed");
-            return response;
+            response.Allocate(14 + terminationHint.Length + requestId.Length + completedHint.Length);
+            response.AppendLine(ImapResponse.Untagged, ImapResponse.Bye, terminationHint);
+            response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

@@ -2,15 +2,15 @@
 
 namespace Meel
 {
-    public sealed class ConnectionContext : Metadata, IDisposable
+    public sealed class ConnectionContext : Metadata, IDisposable, IIdentifyable
     {
-        public ConnectionContext(long id)
+        public ConnectionContext(long uid)
         {
-            Id = id;
+            Uid = uid;
             State = SessionState.NotAuthenticated;
         }
 
-        public long Id { get; private set; }
+        public long Uid { get; private set; }
        
         public string Username { get; set; }
 
@@ -25,6 +25,9 @@ namespace Meel
             if (newSelected == null)
             {
                 State = SessionState.Authenticated;
+            } else
+            {
+                State = SessionState.Selected;
             }
             SelectedMailbox = newSelected;
         }

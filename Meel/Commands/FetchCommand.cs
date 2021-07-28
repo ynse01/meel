@@ -1,13 +1,20 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
 using MimeKit;
+using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class FetchCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("FETCH completed");
+        private static readonly byte[] noneHint = Encoding.ASCII.GetBytes("No messages found");
+        private static readonly byte[] argsHint = 
+            Encoding.ASCII.GetBytes("Need to specify a sequence number and item name");
+        private static readonly byte[] modeHint =
+            Encoding.ASCII.GetBytes("Need to be in SELECTED mode for this command");
         private IMailStation station;
 
         public FetchCommand(IMailStation station)
@@ -15,53 +22,65 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Selected) {
-                var parts = requestOptions.Split(' ', 2);
-                if (parts.Length == 2)
+                var index = requestOptions.PositionOf(LexiConstants.Space);
+                if (index != null)
                 {
                     var mailbox = context.SelectedMailbox;
-                    var sequenceIds = SequenceSetParser.ParseBySequenceId(requestOptions, mailbox.NumberOfMessages);
-                    if (sequenceIds.Any())
+                    var sequence = LexiConstants.AsString(requestOptions.Slice(0, index.Value));
+                    var flags = LexiConstants.AsString(requestOptions.Slice(index.Value));
+                    var sequenceIds = SequenceSetParser.ParseBySequenceId(sequence, mailbox.NumberOfMessages);
+                    if (sequenceIds.Count > 0)
                     {
+                        var lineLength = 6 + requestId.Length + completedHint.Length;
+                        var messagesLength = 0L;
+                        var messages = new List<ImapMessage>();
                         foreach (var sequenceId in sequenceIds)
                         {
                             var message = mailbox.GetMessage(sequenceId);
                             if (message != null)
                             {
-                                PrintMessagePart(response, message, parts[1]);
-                                response.WriteLine(requestId, "OK", "FETCH completed");
+                                messagesLength += message.Size;
+                                messages.Add(message);
                             }
+                        }
+                        response.Allocate((messages.Count * lineLength) + messagesLength);
+                        foreach (var message in messages)
+                        {
+                            PrintMessagePart(response, message, flags);
+                            response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                         }
                     }
                     else
                     {
-                        response.WriteLine(requestId, "NO", "No messages found");
+                        response.Allocate(6 + requestId.Length + noneHint.Length);
+                        response.AppendLine(requestId, ImapResponse.No, noneHint);
                     }
                 } else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to specify a sequence number and item name");
+                    response.Allocate(6 + requestId.Length + argsHint.Length);
+                    response.AppendLine(requestId, ImapResponse.Bad, argsHint);
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be in SELECTED mode for this command");
+                response.Allocate(6 + requestId.Length + modeHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
 
 
         private void PrintMessagePart(ImapResponse response, ImapMessage message, string parts)
         {
             // TODO: Filter on part. For now return entire message.
-            response.Write(message.Message.ToString());
+            response.AppendLine(Encoding.ASCII.GetBytes(message.Message.ToString()));
         }
     }
 }

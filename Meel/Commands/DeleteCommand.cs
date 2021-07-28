@@ -1,10 +1,21 @@
-﻿using Meel.Responses;
+﻿using Meel.Parsing;
+using Meel.Responses;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class DeleteCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("DELETE completed");
+        private static readonly byte[] cannotHint =
+            Encoding.ASCII.GetBytes("Cannot delete mailbox with that name");
+        private static readonly byte[] missingHint =
+            Encoding.ASCII.GetBytes("Need to specify the mailbox name to delete");
+        private static readonly byte[] authHint =
+            Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
+        
         private IMailStation station;
 
         public DeleteCommand(IMailStation station)
@@ -12,35 +23,34 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected) {
-                if (!string.IsNullOrEmpty(requestOptions))
+                if (!requestOptions.IsEmpty)
                 {
-                    var isDeleted = station.DeleteMailbox(context.Username, requestOptions);
+                    var name = LexiConstants.AsString(requestOptions);
+                    var isDeleted = station.DeleteMailbox(context.Username, name);
                     if (isDeleted)
                     {
-                        response.WriteLine(requestId, "OK", "DELETE completed");
+                        response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                     } else
                     {
-                        response.WriteLine(requestId, "NO", "Cannot delete mailbox with that name");
+                        response.AppendLine(requestId, ImapResponse.No, cannotHint);
                     }
                 } else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to specify the mailbox name to delete");
+                    response.AppendLine(requestId, ImapResponse.Bad, missingHint);
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be Authenticated for this command");
+                response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

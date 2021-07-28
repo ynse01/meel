@@ -1,12 +1,19 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
 using Meel.Search;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class SearchCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("SEARCH completed");
+        private static readonly byte[] searchHint = Encoding.ASCII.GetBytes("SEARCH");
+        private static readonly byte[] argsHint = Encoding.ASCII.GetBytes("Need to specify a query");
+        private static readonly byte[] modeHint =
+            Encoding.ASCII.GetBytes("Need to be in Selected mode for this command");
+        
         private IMailStation station;
 
         public SearchCommand(IMailStation station)
@@ -14,26 +21,30 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Selected) {
-                // TODO: Implement searching in MailStation
-                var searchKey = SearchParser.Parse(requestOptions);
-                var list = station.SearchMailbox(context.SelectedMailbox, searchKey);
-                response.WriteLine("*", "SEARCH", string.Join(' ', list));
-                response.WriteLine(requestId, "OK", "SEARCH completed");
+                if (!requestOptions.IsEmpty)
+                {
+                    // TODO: Implement searching in MailStation
+                    var searchKey = SearchParser.Parse(LexiConstants.AsString(requestOptions));
+                    var list = station.SearchMailbox(context.SelectedMailbox, searchKey);
+                    response.AppendLine(ImapResponse.Untagged, searchHint, LexiConstants.AsSpan(string.Join(' ', list)));
+                    response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+                } else
+                {
+                    response.AppendLine(requestId, ImapResponse.Bad, argsHint);
+                }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be in SELECTED mode for this command");
+                response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

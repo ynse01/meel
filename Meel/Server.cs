@@ -2,7 +2,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,38 +17,13 @@ namespace Meel
         {
             var localAddr = IPAddress.Parse(ip);
             server = new TcpListener(localAddr, port);
-            server.Start();
-            Listen();
         }
 
-        private void Listen()
+        public async Task Listen()
         {
             try
             {
-                while (true)
-                {
-                    Console.WriteLine("Waiting for a connection...");
-                    var client = server.AcceptTcpClient();
-                    Console.WriteLine("Connected!");
-                    var station = new InMemoryStation();
-                    var plane = new LocalRequestResponsePlane(station);
-                    var session = new ServerSession(plane);
-                    var id = Interlocked.Increment(ref lastId);
-                    var thread = new Thread(session.ThreadStarter);
-                    var startParameter = Tuple.Create(client, id);
-                    thread.Start(startParameter);
-                }
-            } catch(SocketException ex)
-            {
-                Console.WriteLine($"Socket exception: {ex}");
-                server.Stop();
-            }
-        }
-
-        private async Task ListenByPipe()
-        {
-            try
-            {
+                server.Start();
                 while (true)
                 {
                     Console.WriteLine("Waiting for a connection...");

@@ -1,21 +1,23 @@
 ﻿using Meel.Responses;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class NoopCommand : IImapCommand
     {
-        public ImapResponse Execute(ConnectionContext context, string requestUid, string requestOptions)
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("NOOP completed");
+
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
-            response.WriteLine(requestUid, "OK NOOP completed");
-            return response;
+            response.Allocate(6 + requestId.Length + completedHint.Length);
+            response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
     }
 }

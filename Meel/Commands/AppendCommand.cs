@@ -1,12 +1,24 @@
-﻿using Meel.Responses;
+﻿using Meel.Parsing;
+using Meel.Responses;
 using MimeKit;
-using System.Collections.Generic;
+using System;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class AppendCommand : IImapCommand
     {
         private const string MailboxKey = "AppendToMailbox";
+        private static readonly byte[] createHint = 
+            Encoding.ASCII.GetBytes("[TRYCREATE] No mailbox found by that name");
+        private static readonly byte[] readyHint = Encoding.ASCII.GetBytes("Ready for literal data");
+        private static readonly byte[] missingNameHint = Encoding.ASCII.GetBytes("No mailbox name specified");
+        private static readonly byte[] needAuthenticateHint =
+            Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("APPEND completed");
+        private static readonly byte[] errorHint = Encoding.ASCII.GetBytes("APPEND Internal error");
+
         private IMailStation station;
 
         public AppendCommand(IMailStation station)
@@ -14,66 +26,83 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
+            int result = -1;
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
-                if (!string.IsNullOrEmpty(requestOptions))
+                if (!requestOptions.IsEmpty)
                 {
-                    var parts = requestOptions.Split(' ');
-                    if (parts.Length > 0)
+                    var index = requestOptions.PositionOf(LexiConstants.Space);
+                    if (index.HasValue)
                     {
-                        var name = parts[0];
+                        var name = LexiConstants.AsString(requestOptions);
+                        var sizeSpan = FindBetweenCurlyBraces(requestOptions);
+                        var size = ParseNumber(sizeSpan);
                         // TODO: Handle optional flags and date/time
                         var mailbox = station.SelectMailbox(context.Username, name);
                         if (mailbox != null)
                         {
                             context.ExpectLiteral = true;
                             context.SetMetadata(MailboxKey, mailbox);
-                            response.WriteLine("+", "Ready for literal data");
-                            // TODO: Handle expected literal size
-                            response.ExpectLiteralOfSize = 1;
+                            response.Allocate(3 + requestId.Length + readyHint.Length);
+                            response.AppendLine(requestId, readyHint);
+                            result = size;
                         }
                         else
                         {
-                            response.WriteLine(requestId, "NO", "[TRYCREATE]", "No mailbox found by that name");
+                            response.Allocate(6 + requestId.Length + createHint.Length);
+                            response.AppendLine(requestId, ImapResponse.No, createHint);
                         }
                     }
                     else
                     {
-                        response.WriteLine(requestId, "NO", "No mailbox name specified");
+                        response.Allocate(6 + requestId.Length + missingNameHint.Length);
+                        response.AppendLine(requestId, ImapResponse.No, missingNameHint);
                     }
                 }
                 else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to specify mailbox name");
+                    response.Allocate(6 + requestId.Length + missingNameHint.Length);
+                    response.AppendLine(requestId, ImapResponse.No, missingNameHint);
                 }
-            } else
-            {
-                response.WriteLine(requestId, "BAD", "Need to be Authenticated for this command");
             }
-            return response;
+            else
+            {
+                response.Allocate(6 + requestId.Length + needAuthenticateHint.Length);
+                response.AppendLine(requestId, ImapResponse.No, needAuthenticateHint);
+            }
+            return result;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.TryGetMetadata(MailboxKey, out Mailbox mailbox))
             {
                 var message = ParseMessageLiteral(literal);
                 station.AppendToMailbox(mailbox, message);
-                response.WriteLine(requestId, "OK", "APPEND completed");
+                response.Allocate(6 + requestId.Length + completedHint.Length);
+                response.AppendLine(requestId, ImapResponse.Ok, completedHint);
             } else
             {
-                response.WriteLine(requestId, "BAD", "Internal error");
+                response.Allocate(6 + requestId.Length + errorHint.Length);
+                response.AppendLine(requestId, ImapResponse.Bad, errorHint);
             }
             context.RemoveMetadata(MailboxKey);
             context.ExpectLiteral = false;
-            return response;
         }
 
-        private ImapMessage ParseMessageLiteral(List<string> literal)
+        private static ReadOnlySequence<byte> FindBetweenCurlyBraces(ReadOnlySequence<byte> haystack)
+        {
+            return haystack;
+        }
+
+        private static int ParseNumber(ReadOnlySequence<byte> span)
+        {
+            return 0;
+        }
+
+        private ImapMessage ParseMessageLiteral(ReadOnlySequence<byte> literal)
         {
             return null;
         }

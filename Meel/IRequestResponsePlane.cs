@@ -1,13 +1,20 @@
 ﻿using Meel.Commands;
 using Meel.Responses;
-using System.Collections.Generic;
+using System.Buffers;
 
 namespace Meel
 {
+    public interface IIdentifyable
+    {
+        long Uid { get; }
+    }
+
     public interface IRequestResponsePlane
     {
-        ImapResponse HandleRequest(ImapCommands command, long sessionId, string requestId, string options);
+        IIdentifyable CreateSession(long uid);
 
-        ImapResponse ReceiveLiteral(ImapCommands command, long sessionId, string requestId, List<string> literal);
+        int HandleRequest(ImapCommands command, IIdentifyable sessionId, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> options, ref ImapResponse response);
+
+        void ReceiveLiteral(ImapCommands command, IIdentifyable sessionId, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response);
     }
 }

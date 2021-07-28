@@ -1,13 +1,13 @@
 ﻿
 using Meel.Responses;
-using System.Collections.Generic;
+using System.Buffers;
 
 namespace Meel.Commands
 {
     public interface IImapCommand
     {
-        ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions);
+        int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response);
 
-        ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal);
+        void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response);
     }
 }

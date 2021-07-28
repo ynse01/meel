@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Meel.Parsing;
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Sockets;
@@ -9,19 +10,21 @@ namespace Meel
 {
     public class ServerPipe
     {
-        private const byte NewLine = 0xa;
-
+        private IRequestResponsePlane plane;
         private ServerSession session;
 
         public ServerPipe(IRequestResponsePlane plane)
         {
-            session = new ServerSession(plane);
+            this.plane = plane;
         }
 
         public async Task ProcessAsync(TcpClient client)
         {
             Console.WriteLine($"[{client.Client.RemoteEndPoint}]: connected");
-            var reader = PipeReader.Create(client.GetStream());
+            var stream = client.GetStream();
+            var reader = PipeReader.Create(stream);
+            var writer = PipeWriter.Create(stream);
+            session = new ServerSession(plane, writer);
 
             var isComplete = false;
             while(!isComplete)
@@ -47,11 +50,11 @@ namespace Meel
         private bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
         {
             bool result;
-            var position = buffer.PositionOf(NewLine);
+            var position = buffer.PositionOf(LexiConstants.NewLine);
             if (position != null)
             {
-                // Skip the line and the EndOfLine character.
-                line = buffer.Slice(0, position.Value);
+                // Skip the line and the CarrageReturn and EndOfLine characters.
+                line = buffer.Slice(0, buffer.GetPosition(-1, position.Value));
                 buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
                 result = true;
             }
@@ -63,8 +66,7 @@ namespace Meel
             return result;
         }
 
-        private void ProcessLine(in ReadOnlySequence<byte> buffer) {
-            var line = GetStringFromSequence(buffer);
+        private void ProcessLine(in ReadOnlySequence<byte> line) {
             session.HandleLine(line);
         }
 

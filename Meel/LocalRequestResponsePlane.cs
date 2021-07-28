@@ -1,5 +1,6 @@
 ﻿using Meel.Commands;
 using Meel.Responses;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace Meel
@@ -16,32 +17,33 @@ namespace Meel
             factory = new CommandFactory(station);
         }
 
-        public ImapResponse HandleRequest(ImapCommands request, long sessionId, string requestId, string options)
+        public IIdentifyable CreateSession(long uid)
         {
-            var command = factory.GetCommand(request);
-            var context = GetContext(sessionId);
-            return command.Execute(context, requestId, options);
+            return new ConnectionContext(uid);
         }
 
-        public ImapResponse ReceiveLiteral(ImapCommands request, long sessionId, string requestId, List<string> literal)
-        {
+        public int HandleRequest(
+            ImapCommands request,
+            IIdentifyable session, 
+            ReadOnlySequence<byte> requestId,
+            ReadOnlySequence<byte> options,
+            ref ImapResponse response
+        ) {
             var command = factory.GetCommand(request);
-            var context = GetContext(sessionId);
-            return command.ReceiveLiteral(context, requestId, literal);
+            var context = (ConnectionContext)session;
+            return command.Execute(context, requestId, options, ref response);
         }
 
-        private ConnectionContext GetContext(long sessionId)
-        {
-            ConnectionContext context;
-            lock (syncRoot)
-            {
-                if (!contexts.TryGetValue(sessionId, out context))
-                {
-                    context = new ConnectionContext(sessionId);
-                    contexts.Add(sessionId, context);
-                }
-            }
-            return context;
+        public void ReceiveLiteral(
+            ImapCommands request,
+            IIdentifyable session,
+            ReadOnlySequence<byte> requestId,
+            ReadOnlySequence<byte> literal,
+            ref ImapResponse response
+        ) {
+            var command = factory.GetCommand(request);
+            var context = (ConnectionContext)session;
+            command.ReceiveLiteral(context, requestId, literal, ref response);
         }
     }
 }

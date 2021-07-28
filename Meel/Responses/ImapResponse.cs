@@ -1,54 +1,183 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using Meel.Parsing;
+using System;
+using System.Buffers;
+using System.IO.Pipelines;
 using System.Text;
 
 namespace Meel.Responses
 {
-    public class ImapResponse
+    public ref struct ImapResponse
     {
-        private const string EndOfLine = "\r\n";
+        public static readonly byte[] Ok = Encoding.ASCII.GetBytes("OK");
+        public static readonly byte[] No = Encoding.ASCII.GetBytes("NO");
+        public static readonly byte[] Bad = Encoding.ASCII.GetBytes("BAD");
+        public static readonly byte[] Bye = Encoding.ASCII.GetBytes("BYE");
+        public static readonly byte[] Untagged = Encoding.ASCII.GetBytes("*");
 
-        private List<string> lines = new List<string>();
-        private int index = 0;
+        private PipeWriter writer;
+        private Span<byte> buffer;
+        private int offset;
 
-        public int ExpectLiteralOfSize { get; set; }
-
-        public void Write(params string[] messages)
+        public ImapResponse(PipeWriter writer)
         {
-            var line = string.Join(' ', messages);
-            SafeWrite(line);
+            this.writer = writer;
+            buffer = Span<byte>.Empty;
+            offset = 0;
         }
 
-        public void WriteLine(params string[] messages)
+        public void Allocate(int size)
         {
-            var line = string.Join(' ', messages) + EndOfLine;
-            SafeWrite(line);
-            index++;
+            buffer = writer.GetSpan(size);
         }
 
-        public void SendTo(Stream stream)
+        public void Allocate(long size)
         {
-            foreach(var line in lines)
+            Allocate((int)size);
+        }
+
+        public void AppendLine()
+        {
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySpan<byte> span)
+        {
+            span.CopyTo(buffer.Slice(offset));
+            offset += span.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += span1.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += span1.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span2.CopyTo(buffer.Slice(offset));
+            offset += span2.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySequence<byte> span1)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += (int)span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += (int)span1.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySequence<byte> span1)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += (int)span1.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+
+        public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += (int)span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += span1.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += (int)span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += span1.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span2.CopyTo(buffer.Slice(offset));
+            offset += span2.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2, ReadOnlySpan<byte> span3)
+        {
+            span0.CopyTo(buffer.Slice(offset));
+            offset += (int)span0.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span1.CopyTo(buffer.Slice(offset));
+            offset += span1.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span2.CopyTo(buffer.Slice(offset));
+            offset += span2.Length;
+            buffer[offset++] = LexiConstants.Space;
+            span3.CopyTo(buffer.Slice(offset));
+            offset += span3.Length;
+            buffer[offset++] = LexiConstants.CarrageReturn;
+            buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendSpace()
+        {
+            buffer[offset++] = LexiConstants.Space;
+        }
+
+        public void Append(byte value)
+        {
+            buffer[offset++] = value;
+        }
+
+        public void Append(string str)
+        {
+            var temp = Encoding.ASCII.GetBytes(str);
+            for(var i = 0; i < temp.Length; i++)
             {
-                var bytes = Encoding.ASCII.GetBytes(line);
-                stream.Write(bytes, 0, bytes.Length);
+                buffer[offset++] = temp[i];
             }
+        }
+
+        public void Append(ReadOnlySpan<byte> span)
+        {
+            span.CopyTo(buffer.Slice(offset));
+            offset += span.Length;
+        }
+
+        public void Append(ReadOnlySequence<byte> sequence)
+        {
+            sequence.CopyTo(buffer.Slice(offset));
+            offset += (int)sequence.Length;
+        }
+
+        public void SendToPipe()
+        {
+            writer.Advance(offset);
         }
 
         public override string ToString()
         {
-            return string.Concat(lines);
-        }
-
-        private void SafeWrite(string message)
-        {
-            if (lines.Count == index)
-            {
-                lines.Add(message);
-            } else
-            {
-                lines[index] += message;
-            }
+            return Encoding.ASCII.GetString(buffer);
         }
     }
 }

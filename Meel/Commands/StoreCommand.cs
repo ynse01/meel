@@ -1,13 +1,20 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
 using MimeKit;
-using System.Collections.Generic;
-using System.Linq;
+using System.Buffers;
+using System.Text;
 
 namespace Meel.Commands
 {
     public class StoreCommand : IImapCommand
     {
+        private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("STORE completed");
+        private static readonly byte[] noneHint = Encoding.ASCII.GetBytes("No messages found");
+        private static readonly byte[] argsHint = 
+            Encoding.ASCII.GetBytes("Need to specify a sequence number and item name");
+        private static readonly byte[] modeHint =
+            Encoding.ASCII.GetBytes("Need to be in Selected mode for this command");
+
         private IMailStation station;
 
         public StoreCommand(IMailStation station)
@@ -15,16 +22,18 @@ namespace Meel.Commands
             this.station = station;
         }
 
-        public ImapResponse Execute(ConnectionContext context, string requestId, string requestOptions)
+        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
-            var response = new ImapResponse();
             if (context.State == SessionState.Selected) {
-                var parts = requestOptions.Split(' ', 2);
-                if (parts.Length == 2)
+                var index = requestOptions.PositionOf(LexiConstants.Space);
+                if (index.HasValue)
                 {
                     var mailbox = context.SelectedMailbox;
-                    var sequenceIds = SequenceSetParser.ParseBySequenceId(parts[1], mailbox.NumberOfMessages);
-                    if (sequenceIds.Any())
+                    var sequence = requestOptions.Slice(0, index.Value);
+                    var numMessages = mailbox.NumberOfMessages;
+                    var sequenceIds = 
+                        SequenceSetParser.ParseBySequenceId(LexiConstants.AsString(sequence), numMessages);
+                    if (sequenceIds.Count > 0)
                     {
                         foreach (var sequenceId in sequenceIds)
                         {
@@ -32,29 +41,28 @@ namespace Meel.Commands
                             if (message != null)
                             {
                                 PrintMessageFlags(response, message);
-                                response.WriteLine(requestId, "OK", "FETCH completed");
+                                response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                             }
                         }
                     }
                     else
                     {
-                        response.WriteLine(requestId, "NO", "No messages found");
+                        response.AppendLine(requestId, ImapResponse.No, noneHint);
                     }
                 } else
                 {
-                    response.WriteLine(requestId, "BAD", "Need to specify a sequence number and item name");
+                    response.AppendLine(requestId, ImapResponse.Bad, argsHint);
                 }
             } else
             {
-                response.WriteLine(requestId, "BAD", "Need to be in SELECTED mode for this command");
+                response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
-            return response;
+            return 0;
         }
 
-        public ImapResponse ReceiveLiteral(ConnectionContext context, string requestId, List<string> literal)
+        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             // Not applicable
-            return null;
         }
 
         private void PrintMessageFlags(ImapResponse response, ImapMessage message) { }
