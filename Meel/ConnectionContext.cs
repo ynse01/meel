@@ -34,7 +34,7 @@ namespace Meel
 
         public void Dispose()
         {
-            Foreach((key, value) =>
+            Foreach((value) =>
             {
                 if (value is IDisposable)
                 {

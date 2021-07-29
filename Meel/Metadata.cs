@@ -1,18 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Meel
 {
     public abstract class Metadata
     {
-        private Dictionary<string, object> metadata = new Dictionary<string, object>();
+        private object[] metadata;
 
-        public bool TryGetMetadata<T>(string key, out T value) where T: class
+        public Metadata()
+        {
+            metadata = new object[MetadataKey.MaxId];
+        }
+
+        public bool TryGetMetadata<T>(MetadataKey key, out T value) where T: class
         {
             bool result;
-            if (metadata.TryGetValue(key, out object obj))
+            int index = (int)key;
+            if (index < metadata.Length) 
             {
-                value = obj as T;
+                value = metadata[index] as T;
                 result = true;
             }
             else
@@ -23,26 +28,31 @@ namespace Meel
             return result;
         }
 
-        public bool ContainsMetadata(string key)
+        public bool ContainsMetadata(MetadataKey key)
         {
-            return metadata.ContainsKey(key);
+            var index = (int)key;
+            return ((index < metadata.Length) && metadata[index] != null);
         }
 
-        public void SetMetadata(string key, object value)
+        public void SetMetadata(MetadataKey key, object value)
         {
-            metadata[key] = value;
-        }
-
-        public void RemoveMetadata(string key)
-        {
-            metadata.Remove(key);
-        }
-
-        protected void Foreach(Action<string, object> callback)
-        {
-            foreach(var pair in metadata)
+            int index = (int)key;
+            if (index < metadata.Length)
             {
-                callback(pair.Key, pair.Value);
+                metadata[index] = value;
+            }
+        }
+
+        public void RemoveMetadata(MetadataKey key)
+        {
+            SetMetadata(key, null);
+        }
+
+        protected void Foreach(Action<object> callback)
+        {
+            foreach(var obj in metadata)
+            {
+                callback(obj);
             }
         }
     }
