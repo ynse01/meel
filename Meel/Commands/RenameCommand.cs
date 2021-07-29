@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class RenameCommand : IImapCommand
+    public class RenameCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("RENAME completed");
         private static readonly byte[] cannotHint =
@@ -17,14 +17,9 @@ namespace Meel.Commands
         private static readonly byte[] authHint = 
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
         
-        private IMailStation station;
-
-        public RenameCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public RenameCommand(IMailStation station) : base(station) { }
+        
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected) {
                 if (!requestOptions.IsEmpty)
@@ -32,8 +27,8 @@ namespace Meel.Commands
                     var index = requestOptions.PositionOf(LexiConstants.Space);
                     if (index.HasValue)
                     {
-                        var oldName = LexiConstants.AsString(requestOptions.Slice(0, index.Value));
-                        var newName = LexiConstants.AsString(requestOptions.Slice(index.Value));
+                        var oldName = requestOptions.Slice(0, index.Value).AsString();
+                        var newName = requestOptions.Slice(index.Value).AsString();
                         var isRenamed = station.RenameMailbox(context.Username, oldName, newName);
                         if (isRenamed)
                         {
@@ -61,11 +56,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class FetchCommand : IImapCommand
+    public class FetchCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("FETCH completed");
         private static readonly byte[] noneHint = Encoding.ASCII.GetBytes("No messages found");
@@ -15,22 +15,18 @@ namespace Meel.Commands
             Encoding.ASCII.GetBytes("Need to specify a sequence number and item name");
         private static readonly byte[] modeHint =
             Encoding.ASCII.GetBytes("Need to be in SELECTED mode for this command");
-        private IMailStation station;
+        
+        public FetchCommand(IMailStation station) : base(station) { }
 
-        public FetchCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Selected) {
                 var index = requestOptions.PositionOf(LexiConstants.Space);
                 if (index != null)
                 {
                     var mailbox = context.SelectedMailbox;
-                    var sequence = LexiConstants.AsString(requestOptions.Slice(0, index.Value));
-                    var flags = LexiConstants.AsString(requestOptions.Slice(index.Value));
+                    var sequence = requestOptions.Slice(0, index.Value).AsString();
+                    var flags = requestOptions.Slice(index.Value).AsString();
                     var sequenceIds = SequenceSetParser.ParseBySequenceId(sequence, mailbox.NumberOfMessages);
                     if (sequenceIds.Count > 0)
                     {
@@ -70,12 +66,6 @@ namespace Meel.Commands
             }
             return 0;
         }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
-        }
-
 
         private void PrintMessagePart(ImapResponse response, ImapMessage message, string parts)
         {

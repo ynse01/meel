@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class CloseCommand : IImapCommand
+    public class CloseCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("CLOSE completed");
         private static readonly byte[] expungeHint = Encoding.ASCII.GetBytes("EXPUNGE");
@@ -13,14 +13,9 @@ namespace Meel.Commands
         private static readonly byte[] modeHint = 
             Encoding.ASCII.GetBytes("Need to be in SELECTED mode for this command");
 
-        private IMailStation station;
+        public CloseCommand(IMailStation station) : base(station) { }
 
-        public CloseCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Selected) {
                 var deleted = station.ExpungeBySequence(context.SelectedMailbox);
@@ -30,7 +25,7 @@ namespace Meel.Commands
                     response.Allocate((deleted.Count * lineLength) + 6 + requestId.Length + completedHint.Length);
                     foreach (var id in deleted)
                     {
-                        response.AppendLine(ImapResponse.Untagged, LexiConstants.AsSpan(id), expungeHint);
+                        response.AppendLine(ImapResponse.Untagged, id.AsSpan(), expungeHint);
                     }
                     context.SetSelectedMailbox(null);
                     response.AppendLine(requestId, ImapResponse.Ok, completedHint);
@@ -45,11 +40,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }

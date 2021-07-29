@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class StoreCommand : IImapCommand
+    public class StoreCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("STORE completed");
         private static readonly byte[] noneHint = Encoding.ASCII.GetBytes("No messages found");
@@ -15,14 +15,9 @@ namespace Meel.Commands
         private static readonly byte[] modeHint =
             Encoding.ASCII.GetBytes("Need to be in Selected mode for this command");
 
-        private IMailStation station;
+        public StoreCommand(IMailStation station) : base(station) { }
 
-        public StoreCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Selected) {
                 var index = requestOptions.PositionOf(LexiConstants.Space);
@@ -32,7 +27,7 @@ namespace Meel.Commands
                     var sequence = requestOptions.Slice(0, index.Value);
                     var numMessages = mailbox.NumberOfMessages;
                     var sequenceIds = 
-                        SequenceSetParser.ParseBySequenceId(LexiConstants.AsString(sequence), numMessages);
+                        SequenceSetParser.ParseBySequenceId(sequence.AsString(), numMessages);
                     if (sequenceIds.Count > 0)
                     {
                         foreach (var sequenceId in sequenceIds)
@@ -58,11 +53,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
 
         private void PrintMessageFlags(ImapResponse response, ImapMessage message) { }

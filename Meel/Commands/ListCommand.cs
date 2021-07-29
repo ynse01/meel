@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class ListCommand : IImapCommand
+    public class ListCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("LIST completed");
         private static readonly byte[] listHint = Encoding.ASCII.GetBytes("LIST");
@@ -15,14 +15,9 @@ namespace Meel.Commands
         private static readonly byte[] authHint =
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
         
-        private IMailStation station;
+        public ListCommand(IMailStation station) : base(station) { }
 
-        public ListCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
@@ -77,11 +72,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }

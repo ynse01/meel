@@ -18,31 +18,5 @@ namespace Meel.Parsing
 
         public static readonly byte[] UID = new byte[] { 0x55, 0x49, 0x44 };
 
-        public static Span<byte> AsSpan(string txt)
-        {
-            return Encoding.ASCII.GetBytes(txt);
-        }
-
-        public static String AsString(ReadOnlySequence<byte> sequence)
-        {
-            string result;
-            if (sequence.IsSingleSegment) {
-                result = AsString(sequence.FirstSpan);
-            } else
-            {
-                result = AsString(sequence.ToArray());
-            }
-            return result;
-        }
-
-        public static String AsString(ReadOnlySpan<byte> span)
-        {
-            return Encoding.ASCII.GetString(span);
-        }
-
-        public static Span<byte> AsSpan(int number)
-        {
-            return AsSpan(number.ToString());
-        }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class CreateCommand : IImapCommand
+    public class CreateCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("CREATE completed");
         private static readonly byte[] cannotHint =
@@ -15,19 +15,14 @@ namespace Meel.Commands
         private static readonly byte[] authHint =
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
 
-        private IMailStation station;
+        public CreateCommand(IMailStation station) : base(station) { }
 
-        public CreateCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected) {
                 if (!requestOptions.IsEmpty)
                 {
-                    var name = LexiConstants.AsString(requestOptions);
+                    var name = requestOptions.AsString();
                     var isCreated = station.CreateMailbox(context.Username, name);
                     if (isCreated)
                     {
@@ -49,11 +44,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }

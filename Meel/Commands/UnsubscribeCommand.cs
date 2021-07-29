@@ -1,12 +1,11 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Meel.Commands
 {
-    public class UnsubscribeCommand : IImapCommand
+    public class UnsubscribeCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("UNSUBSCRIBE completed");
         private static readonly byte[] cannotHint =
@@ -16,20 +15,15 @@ namespace Meel.Commands
         private static readonly byte[] authHint =
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
 
-        private IMailStation station;
+        public UnsubscribeCommand(IMailStation station) : base(station) { }
 
-        public UnsubscribeCommand(IMailStation station)
-        {
-            this.station = station;
-        }
-
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
                 if (!requestOptions.IsEmpty)
                 {
-                    var name = LexiConstants.AsString(requestOptions);
+                    var name = requestOptions.AsString();
                     var isSubscribed = station.SetSubscription(context.Username, name, false);
                     if (isSubscribed)
                     {
@@ -50,11 +44,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }

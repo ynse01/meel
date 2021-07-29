@@ -7,9 +7,9 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class AppendCommand : IImapCommand
+    public class AppendCommand : ImapCommand
     {
-        private const string MailboxKey = "AppendToMailbox";
+        private static MetadataKey MailboxKey;
         private static readonly byte[] createHint = 
             Encoding.ASCII.GetBytes("[TRYCREATE] No mailbox found by that name");
         private static readonly byte[] readyHint = Encoding.ASCII.GetBytes("Ready for literal data");
@@ -19,14 +19,14 @@ namespace Meel.Commands
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("APPEND completed");
         private static readonly byte[] errorHint = Encoding.ASCII.GetBytes("APPEND Internal error");
 
-        private IMailStation station;
+        public AppendCommand(IMailStation station) : base(station) { }
 
-        public AppendCommand(IMailStation station)
+        public override void Initialize()
         {
-            this.station = station;
+            MailboxKey = MetadataKey.Create();
         }
 
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             int result = -1;
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
@@ -36,7 +36,7 @@ namespace Meel.Commands
                     var index = requestOptions.PositionOf(LexiConstants.Space);
                     if (index.HasValue)
                     {
-                        var name = LexiConstants.AsString(requestOptions);
+                        var name = requestOptions.AsString();
                         var sizeSpan = FindBetweenCurlyBraces(requestOptions);
                         var size = ParseNumber(sizeSpan);
                         // TODO: Handle optional flags and date/time
@@ -75,7 +75,7 @@ namespace Meel.Commands
             return result;
         }
 
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
+        public override void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {
             if (context.TryGetMetadata(MailboxKey, out Mailbox mailbox))
             {

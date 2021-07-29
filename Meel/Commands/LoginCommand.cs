@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Meel.Commands
 {
-    public class LoginCommand : IImapCommand
+    public class LoginCommand : ImapCommand
     {
         private static readonly byte[] acceptHint =
             Encoding.ASCII.GetBytes("LOGIN accepted");
@@ -13,8 +13,10 @@ namespace Meel.Commands
             Encoding.ASCII.GetBytes("Need to specify username and password");
         private static readonly byte[] invalidHint =
             Encoding.ASCII.GetBytes("LOGIN invalid username or password provided");
-        
-        public int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+
+        public LoginCommand(IMailStation station) : base(station) { }
+
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
         {
             if (!requestOptions.IsEmpty)
             {
@@ -22,7 +24,7 @@ namespace Meel.Commands
                 if (index.HasValue)
                 {
                     response.AppendLine(requestId, ImapResponse.Ok, acceptHint);
-                    context.Username = LexiConstants.AsString(requestOptions.Slice(0, index.Value));
+                    context.Username = requestOptions.Slice(0, index.Value).AsString();
                     context.State = SessionState.Authenticated;
                 } else
                 {
@@ -35,11 +37,6 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, argsHint);
             }
             return 0;
-        }
-
-        public void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
-        {
-            // Not applicable
         }
     }
 }
