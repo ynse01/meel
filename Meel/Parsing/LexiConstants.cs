@@ -84,6 +84,41 @@ namespace Meel.Parsing
         public static readonly byte[] Subscribe = new byte[] { S, U, B, S, C, R, I, B, E };
         public static readonly byte[] Unsubscribe = new byte[] { U, N, S, U, B, S, C, R, I, B, E };
 
+        public static readonly byte[] All = new byte[] { A, L, L };
+        public static readonly byte[] Answered = new byte[] { A, N, S, W, E, R, E, D };
+        public static readonly byte[] Bcc = new byte[] { B, C, C };
+        public static readonly byte[] Before = new byte[] { B, E, F, O, R, E };
+        public static readonly byte[] Body = new byte[] { B, O, D, Y };
+        public static readonly byte[] Cc = new byte[] { C, C };
+        public static readonly byte[] Deleted = new byte[] { D, E, L, E, T, E, D };
+        public static readonly byte[] Flagged = new byte[] { F, L, A, G, G, E, D };
+        public static readonly byte[] From = new byte[] { F, R, O, M };
+        public static readonly byte[] Keyword = new byte[] { K, E, Y, W, O, R, D };
+        public static readonly byte[] New = new byte[] { N, E, W };
+        public static readonly byte[] Old = new byte[] { O, L, D };
+        public static readonly byte[] On = new byte[] { O, N };
+        public static readonly byte[] Recent = new byte[] { R, E, C, E, N, T };
+        public static readonly byte[] Seen = new byte[] { S, E, E, N };
+        public static readonly byte[] Since = new byte[] { S, I, N, C, E };
+        public static readonly byte[] Subject = new byte[] { S, U, B, J, E, C, T };
+        public static readonly byte[] Text = new byte[] { T, E, X, T };
+        public static readonly byte[] To = new byte[] { T, O };
+        public static readonly byte[] UnAnswered = new byte[] { U, N, A, N, S, W, E, R, E, D };
+        public static readonly byte[] UnDeleted = new byte[] { U, N, D, E, L, E, T, E };
+        public static readonly byte[] UnFlagged = new byte[] { U, N, F, L, A, G, G, E, D };
+        public static readonly byte[] UnKeyword = new byte[] { U, N, K, E, W, O, R, D };
+        public static readonly byte[] UnSeen = new byte[] { U, N, S,  E, E, N };
+        public static readonly byte[] Draft = new byte[] { D, R, A, F, T };
+        public static readonly byte[] Header = new byte[] { H, E, A, D, E, R };
+        public static readonly byte[] Larger = new byte[] { L, A, R, G, E, R };
+        public static readonly byte[] Not = new byte[] { N, O, T };
+        public static readonly byte[] Or = new byte[] { O, R };
+        public static readonly byte[] SentBefore = new byte[] { S, E, N, T, B, E, F, O, R, E };
+        public static readonly byte[] SentOn = new byte[] { S, E, N, T, O, N };
+        public static readonly byte[] SentSince = new byte[] { S, E, N, T, B, E, F, O, R, E };
+        public static readonly byte[] Smaller = new byte[] { S, M, A, L, L, E, R };
+        public static readonly byte[] UnDraft = new byte[] { U, N, D, R, A, F, T };
+
         public static bool IsDigit(byte input)
         {
             return input >= Number0 && input <= Number9;

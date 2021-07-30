@@ -2,11 +2,11 @@
 
 namespace Meel.Search
 {
-    public class NewSearchKey : ISearchKey
+    public class OldSearchKey : ISearchKey
     {
         public bool Matches(ImapMessage message, int sequence)
         {
-            return !message.Seen && message.Recent;
+            return !message.Recent;
         }
     }
 }

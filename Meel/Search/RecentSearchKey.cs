@@ -13,7 +13,7 @@ namespace Meel.Search
 
         public bool Matches(ImapMessage message, int sequence)
         {
-            return !(inverted ^ message.Recent);
+            return inverted ^ message.Recent;
         }
     }
 }

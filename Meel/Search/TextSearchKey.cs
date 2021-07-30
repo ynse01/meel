@@ -4,11 +4,11 @@ using Meel.Parsing;
 
 namespace Meel.Search
 {
-    public class BodySearchKey : ISearchKey
+    public class TextSearchKey : ISearchKey
     {
         private string needle;
 
-        public BodySearchKey(ReadOnlySpan<byte> needle)
+        public TextSearchKey(ReadOnlySpan<byte> needle)
         {
             this.needle = needle.AsString();
         }

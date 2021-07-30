@@ -2,18 +2,18 @@
 
 namespace Meel.Search
 {
-    public class AnsweredSearchKey : ISearchKey
+    public class FlaggedSearchKey : ISearchKey
     {
         private bool inverted;
 
-        public AnsweredSearchKey(bool inverted)
+        public FlaggedSearchKey(bool inverted)
         {
             this.inverted = inverted;
         }
 
         public bool Matches(ImapMessage message, int sequence)
         {
-            return inverted ^ message.Answered;
+            return inverted ^ message.Flagged;
         }
     }
 }

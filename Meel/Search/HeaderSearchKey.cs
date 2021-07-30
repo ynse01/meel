@@ -1,4 +1,5 @@
 ﻿using System;
+using Meel.Parsing;
 
 namespace Meel.Search
 {
@@ -7,10 +8,10 @@ namespace Meel.Search
         private string name;
         private string value;
 
-        public HeaderSearchKey(string name, string value)
+        public HeaderSearchKey(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            this.name = name;
-            this.value = value;
+            this.name = name.AsString();
+            this.value = value.AsString();
         }
 
         public bool Matches(ImapMessage message, int sequence)

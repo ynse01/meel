@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Linq;
+using Meel.Parsing;
 
 namespace Meel.Search
 {
     public class BccSearchKey : ISearchKey
     {
-        private string needle;
+        private string value;
 
-        public BccSearchKey(string needle)
+        public BccSearchKey(ReadOnlySpan<byte> value)
         {
-            this.needle = needle;
+            this.value = value.AsString();
         }
 
         public bool Matches(ImapMessage message, int sequence)
         {
             var bcc = message.Message.Bcc;
             return bcc.Any(b =>
-                b.Name.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                b.Name.Contains(value, StringComparison.OrdinalIgnoreCase)
             );
         }
     }

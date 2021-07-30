@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Meel.Parsing;
 
 namespace Meel.Search
 {
@@ -7,9 +8,9 @@ namespace Meel.Search
     {
         private string needle;
 
-        public CcSearchKey(string needle)
+        public CcSearchKey(ReadOnlySpan<byte> needle)
         {
-            this.needle = needle;
+            this.needle = needle.AsString();
         }
 
         public bool Matches(ImapMessage message, int sequence)

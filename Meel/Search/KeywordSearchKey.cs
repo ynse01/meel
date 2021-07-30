@@ -1,4 +1,5 @@
 ﻿using System;
+using Meel.Parsing;
 
 namespace Meel.Search
 {
@@ -7,9 +8,9 @@ namespace Meel.Search
         private string keyword;
         private bool inverted;
 
-        public KeywordSearchKey(string keyword, bool inverted)
+        public KeywordSearchKey(ReadOnlySpan<byte> keyword, bool inverted)
         {
-            this.keyword = keyword.ToUpperInvariant();
+            this.keyword = keyword.AsString().ToUpperInvariant();
             this.inverted = inverted;
         }
 
@@ -41,7 +42,7 @@ namespace Meel.Search
                     hasFlag = message.Seen;
                     break;
             }
-            return !(inverted ^ hasFlag);
+            return inverted ^ hasFlag;
         }
     }
 }

@@ -137,7 +137,7 @@ namespace Meel.Stations
                         break;
                     case 'R':
                     case 'r':
-                        flags |= MessageFlags.Read;
+                        flags |= MessageFlags.Recent;
                         break;
                     case 'S':
                     case 's':

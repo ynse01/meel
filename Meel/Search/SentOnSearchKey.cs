@@ -1,4 +1,5 @@
 ﻿using System;
+using Meel.Parsing;
 
 namespace Meel.Search
 {
@@ -6,9 +7,9 @@ namespace Meel.Search
     {
         private DateTimeOffset date;
 
-        public SentOnSearchKey(DateTimeOffset before)
+        public SentOnSearchKey(ReadOnlySpan<byte> before)
         {
-            date = before.Date;
+            date = DateTimeOffset.Parse(before.AsString()).Date;
         }
 
         public bool Matches(ImapMessage message, int sequence)

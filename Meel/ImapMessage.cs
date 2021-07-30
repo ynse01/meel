@@ -12,7 +12,7 @@ namespace Meel
             Deleted = flags.HasFlag(MessageFlags.Trashed);
             Flagged = flags.HasFlag(MessageFlags.Flagged);
             Draft = flags.HasFlag(MessageFlags.Draft);
-            Recent = !flags.HasFlag(MessageFlags.Read);
+            Recent = flags.HasFlag(MessageFlags.Recent);
             Size = size;
         }
 
