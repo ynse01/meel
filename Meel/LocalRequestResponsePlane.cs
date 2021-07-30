@@ -1,5 +1,6 @@
 ﻿using Meel.Commands;
 using Meel.Responses;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 
@@ -26,7 +27,7 @@ namespace Meel
             ImapCommands request,
             IIdentifyable session, 
             ReadOnlySequence<byte> requestId,
-            ReadOnlySequence<byte> options,
+            ReadOnlySpan<byte> options,
             ref ImapResponse response
         ) {
             var command = factory.GetCommand(request);

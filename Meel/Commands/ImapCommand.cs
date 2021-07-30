@@ -1,5 +1,6 @@
 ﻿
 using Meel.Responses;
+using System;
 using System.Buffers;
 
 namespace Meel.Commands
@@ -15,7 +16,7 @@ namespace Meel.Commands
 
         public virtual void Initialize() { }
 
-        public abstract int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response);
+        public abstract int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response);
 
         public virtual void ReceiveLiteral(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response)
         {

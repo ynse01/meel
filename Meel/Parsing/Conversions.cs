@@ -7,23 +7,9 @@ namespace Meel.Parsing
 {
     public static class Conversions
     {
-        public static Span<byte> AsSpan(this string txt)
-        {
-            return Encoding.ASCII.GetBytes(txt);
-        }
-
         public static string AsString(this ReadOnlySequence<byte> sequence)
         {
-            string result;
-            if (sequence.IsSingleSegment)
-            {
-                result = AsString(sequence.FirstSpan);
-            }
-            else
-            {
-                result = AsString(sequence.ToArray());
-            }
-            return result;
+            return AsString(AsSpan(sequence));
         }
 
         public static string AsString(this ReadOnlySpan<byte> span)
@@ -31,10 +17,27 @@ namespace Meel.Parsing
             return Encoding.ASCII.GetString(span);
         }
 
+        public static Span<byte> AsSpan(this string txt)
+        {
+            return Encoding.ASCII.GetBytes(txt);
+        }
+
         public static Span<byte> AsSpan(this int number)
         {
             return AsSpan(number.ToString());
         }
 
+        public static ReadOnlySpan<byte> AsSpan(this ReadOnlySequence<byte> sequence)
+        {
+            ReadOnlySpan<byte> result;
+            if (sequence.IsSingleSegment)
+            {
+                result = sequence.FirstSpan;
+            } else
+            {
+                result = sequence.ToArray();
+            }
+            return result;
+        }
     }
 }

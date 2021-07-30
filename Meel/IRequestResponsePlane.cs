@@ -1,5 +1,6 @@
 ﻿using Meel.Commands;
 using Meel.Responses;
+using System;
 using System.Buffers;
 
 namespace Meel
@@ -13,7 +14,7 @@ namespace Meel
     {
         IIdentifyable CreateSession(long uid);
 
-        int HandleRequest(ImapCommands command, IIdentifyable sessionId, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> options, ref ImapResponse response);
+        int HandleRequest(ImapCommands command, IIdentifyable sessionId, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> options, ref ImapResponse response);
 
         void ReceiveLiteral(ImapCommands command, IIdentifyable sessionId, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> literal, ref ImapResponse response);
     }

@@ -1,5 +1,6 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
+using System;
 using System.Buffers;
 using System.Text;
 
@@ -17,14 +18,14 @@ namespace Meel.Commands
         
         public ListCommand(IMailStation station) : base(station) { }
 
-        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
                 if (!requestOptions.IsEmpty)
                 {
-                    var index = requestOptions.PositionOf(LexiConstants.Space);
-                    if (index.HasValue) {
+                    var index = requestOptions.IndexOf(LexiConstants.Space);
+                    if (index >= 0) {
                         var completeList = station.ListMailboxes(context.Username, false);
                         if (completeList.Count > 0)
                         {

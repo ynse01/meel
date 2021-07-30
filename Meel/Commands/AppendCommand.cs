@@ -26,15 +26,15 @@ namespace Meel.Commands
             MailboxKey = MetadataKey.Create();
         }
 
-        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
         {
             int result = -1;
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
                 if (!requestOptions.IsEmpty)
                 {
-                    var index = requestOptions.PositionOf(LexiConstants.Space);
-                    if (index.HasValue)
+                    var index = requestOptions.IndexOf(LexiConstants.Space);
+                    if (index >= 0)
                     {
                         var name = requestOptions.AsString();
                         var sizeSpan = FindBetweenCurlyBraces(requestOptions);
@@ -92,12 +92,12 @@ namespace Meel.Commands
             context.ExpectLiteral = false;
         }
 
-        private static ReadOnlySequence<byte> FindBetweenCurlyBraces(ReadOnlySequence<byte> haystack)
+        private static ReadOnlySpan<byte> FindBetweenCurlyBraces(ReadOnlySpan<byte> haystack)
         {
             return haystack;
         }
 
-        private static int ParseNumber(ReadOnlySequence<byte> span)
+        private static int ParseNumber(ReadOnlySpan<byte> span)
         {
             return 0;
         }

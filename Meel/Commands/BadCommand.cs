@@ -1,4 +1,5 @@
 ﻿using Meel.Responses;
+using System;
 using System.Buffers;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace Meel.Commands
 
         public BadCommand(IMailStation station) : base(station) { }
 
-        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
         {
             response.Allocate(7 + requestId.Length + invalidHint.Length);
             response.AppendLine(requestId, ImapResponse.Bad, invalidHint);

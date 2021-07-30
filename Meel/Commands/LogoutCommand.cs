@@ -1,4 +1,5 @@
 ﻿using Meel.Responses;
+using System;
 using System.Buffers;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace Meel.Commands
 
         public LogoutCommand(IMailStation station) : base(station) { }
         
-        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
         {
             response.Allocate(14 + terminationHint.Length + requestId.Length + completedHint.Length);
             response.AppendLine(ImapResponse.Untagged, ImapResponse.Bye, terminationHint);

@@ -1,6 +1,7 @@
 ﻿using Meel.Parsing;
 using Meel.Responses;
 using Meel.Search;
+using System;
 using System.Buffers;
 using System.Text;
 
@@ -16,7 +17,7 @@ namespace Meel.Commands
         
         public SearchCommand(IMailStation station) : base(station) { }
 
-        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> requestOptions, ref ImapResponse response)
+        public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
         {
             if (context.State == SessionState.Selected) {
                 if (!requestOptions.IsEmpty)
@@ -24,7 +25,7 @@ namespace Meel.Commands
                     // TODO: Implement searching in MailStation
                     var searchKey = SearchParser.Parse(requestOptions.AsString());
                     var list = station.SearchMailbox(context.SelectedMailbox, searchKey);
-                    response.AppendLine(ImapResponse.Untagged, searchHint, string.Join(' ', list).AsSpan());
+                    response.AppendLine(ImapResponse.Untagged, searchHint, Conversions.AsSpan(string.Join(' ', list)));
                     response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                 } else
                 {

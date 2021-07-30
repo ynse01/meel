@@ -52,25 +52,25 @@ namespace Meel
             Console.WriteLine("Received {0}", line);
             if (!line.IsEmpty)
             {
-                var requestId = ReadToken(line);
-                line = line.Slice(line.GetPosition(1, requestId.End));
-                var request = ReadToken(line);
-                line = line.Slice(line.GetPosition(1, request.End));
-                var options = ReadToken(line);
-                if (!requestId.IsEmpty && !request.IsEmpty) {
-                    var command = ParseRequest(request);
+                var reader = new SequenceReader<byte>(line);
+                if (reader.TryReadTo(out ReadOnlySequence<byte> requestId, LexiConstants.Space, true))
+                {
+                    var command = CommandParser.Parse(reader, out ReadOnlySpan<byte> options);
                     if (command == ImapCommands.StartTls)
                     {
                         UpgradeToTls(requestId.ToArray());
                     }
-                    else
+                    else if (command == ImapCommands.Uid)
+                    {
+
+                    } else
                     {
                         ExecuteCommand(command, requestId, options);
                     }
                 }
                 else
                 {
-                    ExecuteCommand(ImapCommands.Bad, line, ReadOnlySequence<byte>.Empty);
+                    ExecuteCommand(ImapCommands.Bad, line, ReadOnlySpan<byte>.Empty);
                 }
             }
         }
@@ -79,13 +79,6 @@ namespace Meel
         {
             var pos = haystack.PositionOf(LexiConstants.Space);
             return haystack.Slice(0, pos.Value);
-        }
-
-        private ImapCommands ParseRequest(ReadOnlySequence<byte> request)
-        {
-            // TODO: Implement parsing
-            ImapCommands result = ImapCommands.Bad;
-            return result;
         }
 
         private void HandleLiteral(ReadOnlySequence<byte> data)
@@ -104,7 +97,7 @@ namespace Meel
             }
         }
 
-        private void ExecuteCommand(ImapCommands command, ReadOnlySequence<byte> requestId, ReadOnlySequence<byte> options)
+        private void ExecuteCommand(ImapCommands command, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> options)
         {
             var response = new ImapResponse(writer);
             var literalSize = responsePlane.HandleRequest(command, sessionId, requestId, options, ref response);
