@@ -18,7 +18,7 @@ namespace Meel
             if (index < metadata.Length) 
             {
                 value = metadata[index] as T;
-                result = true;
+                result = (value != null);
             }
             else
             {
