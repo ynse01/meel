@@ -41,7 +41,8 @@ namespace Meel.Stations
             {
                 var message = MimeMessage.Load(stream);
                 var flags = ParseFlags(filename);
-                return new ImapMessage(message, filename, flags, stream.Length);
+                var uid = GetUid(filename);
+                return new ImapMessage(message, uid, flags, stream.Length);
             }
         }
 
@@ -76,9 +77,14 @@ namespace Meel.Stations
             return null;
         }
 
-        public string Sequence2Uid(int sequenceId)
+        public int Sequence2Uid(int sequenceId)
         {
-            return files[sequenceId];
+            return GetUid(files[sequenceId]);
+        }
+
+        public int GetUid(string filename)
+        {
+            return 0;
         }
 
         private void SyncWithDisk()

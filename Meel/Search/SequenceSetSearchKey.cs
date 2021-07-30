@@ -10,7 +10,7 @@ namespace Meel.Search
 
         public SequenceSetSearchKey(ReadOnlySpan<byte> sequence, int maxId)
         {
-            list = SequenceSetParser.ParseBySequenceId(sequence, maxId);
+            list = SequenceSetParser.Parse(sequence, maxId);
         }
 
         public bool Matches(ImapMessage message, int sequence)

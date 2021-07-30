@@ -53,7 +53,7 @@ namespace Meel.Tests
             station.CreateMailbox("Piet", "INBOX");
             station.CreateMailbox("Klaas", "INBOX");
             var klaas = station.SelectMailbox("Klaas", "INBOX");
-            station.AppendToMailbox(klaas, new ImapMessage(null, null, MessageFlags.None, 0));
+            station.AppendToMailbox(klaas, new ImapMessage(null, -1, MessageFlags.None, 0));
             // Act
             var actual = station.SelectMailbox("Klaas", "INBOX");
             // Assert

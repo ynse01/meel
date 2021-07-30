@@ -53,7 +53,7 @@ namespace Meel.Stations
             CanWrite = false;
         }
 
-        public string Sequence2Uid(int sequenceId)
+        public int Sequence2Uid(int sequenceId)
         {
             return messages[sequenceId].Uid;
         }

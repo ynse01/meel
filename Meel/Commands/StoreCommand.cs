@@ -28,7 +28,7 @@ namespace Meel.Commands
                     var sequence = requestOptions.Slice(0, index);
                     var numMessages = mailbox.NumberOfMessages;
                     var sequenceIds = 
-                        SequenceSetParser.ParseBySequenceId(sequence, numMessages);
+                        SequenceSetParser.Parse(sequence, numMessages);
                     if (sequenceIds.Count > 0)
                     {
                         foreach (var sequenceId in sequenceIds)

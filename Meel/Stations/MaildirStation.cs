@@ -39,7 +39,7 @@ namespace Meel.Stations
             return sequences;
         }
 
-        public List<string> ExpungeByUid(Mailbox mailbox)
+        public List<int> ExpungeByUid(Mailbox mailbox)
         {
             var mdmb = (MaildirMailbox)mailbox;
             var uids = ExpungeBySequence(mailbox).Select(s => mdmb.Sequence2Uid(s)).ToList();

@@ -48,7 +48,7 @@ namespace Meel.Stations
             return ((InMemoryMailbox)mailbox).Expunge();
         }
 
-        public List<string> ExpungeByUid(Mailbox mailbox)
+        public List<int> ExpungeByUid(Mailbox mailbox)
         {
             var immb = (InMemoryMailbox)mailbox;
             return immb.Expunge().Select(s => immb.Sequence2Uid(s)).ToList();

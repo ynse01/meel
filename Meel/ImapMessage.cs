@@ -4,7 +4,7 @@ namespace Meel
 {
     public class ImapMessage
     {
-        public ImapMessage(MimeMessage message, string uid, MessageFlags flags, long size)
+        public ImapMessage(MimeMessage message, int uid, MessageFlags flags, long size)
         {
             Message = message;
             Uid = uid;
@@ -16,7 +16,7 @@ namespace Meel
             Size = size;
         }
 
-        public string Uid { get; private set; }
+        public int Uid { get; private set; }
 
         public long Size { get; private set; }
 

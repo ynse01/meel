@@ -23,6 +23,6 @@ namespace Meel
 
         public List<int> ExpungeBySequence(Mailbox mailbox);
 
-        public List<string> ExpungeByUid(Mailbox mailbox);
+        public List<int> ExpungeByUid(Mailbox mailbox);
     }
 }

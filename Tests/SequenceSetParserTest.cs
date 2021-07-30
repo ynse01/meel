@@ -18,7 +18,7 @@ namespace Meel.Tests
             var expected = new int[] { 2, 4, 5, 6, 7, 9, 12, 13, 14, 15 };
             var numMessages = 15;
             // Act
-            var actual = SequenceSetParser.ParseBySequenceId(query.AsAsciiSpan(), numMessages);
+            var actual = SequenceSetParser.Parse(query.AsAsciiSpan(), numMessages);
             // Assert
             CollectionAssert.AreEquivalent(expected, actual);
         }
@@ -36,7 +36,7 @@ namespace Meel.Tests
             var expected = new int[] { 4, 5, 6, 7, 8, 9, 10 };
             var numMessages = 10;
             // Act
-            var actual = SequenceSetParser.ParseBySequenceId(query.AsAsciiSpan(), numMessages);
+            var actual = SequenceSetParser.Parse(query.AsAsciiSpan(), numMessages);
             // Assert
             CollectionAssert.AreEquivalent(expected, actual);
         }

@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Meel.Parsing;
 
 namespace Meel.Search
 {
     public class UidSearchKey : ISearchKey
     {
-        private ICollection<string> uids;
+        private ICollection<int> uids;
 
-        public UidSearchKey(string sequence, string maxUid)
+        public UidSearchKey(ReadOnlySpan<byte> sequence, int maxUid)
         {
-            uids = SequenceSetParser.ParseByUid(sequence, maxUid);
+            uids = SequenceSetParser.Parse(sequence, maxUid);
         }
 
         public bool Matches(ImapMessage message, int sequence)
