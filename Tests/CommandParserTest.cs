@@ -65,6 +65,22 @@ namespace Meel.Tests
         }
 
         [Test]
+        [TestCase("UID", new byte[0])]
+        [TestCase("UID A", new byte[1] { LexiConstants.A })]
+        [TestCase("UID 2", new byte[1] { LexiConstants.Number2 })]
+        [TestCase("UID A 2", new byte[3] { LexiConstants.A, LexiConstants.Space, LexiConstants.Number2 })]
+        public void TestOptions(string input, byte[] expected)
+        {
+            // Arrange
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(input));
+            // Act
+            var actual = CommandParser.Parse(buffer, out ReadOnlySpan<byte> options);
+            // Assert
+            Assert.AreEqual(ImapCommands.Uid, actual);
+            Assert.IsTrue(AsciiComparer.CompareIgnoreCase(options, expected));
+        }
+
+        [Test]
         [TestCase("NOTEXISTS")]
         [TestCase("INVALID")]
         [TestCase("BAD")]
