@@ -26,7 +26,7 @@ namespace Meel.Commands
                 if (index >= 0)
                 {
                     var mailbox = context.SelectedMailbox;
-                    var sequence = requestOptions.Slice(0, index).AsString();
+                    var sequence = requestOptions.Slice(0, index);
                     var flags = requestOptions.Slice(index + 1).AsString();
                     var sequenceIds = SequenceSetParser.ParseBySequenceId(sequence, mailbox.NumberOfMessages);
                     if (sequenceIds.Count > 0)

@@ -25,7 +25,7 @@ namespace Meel.Commands
                     // TODO: Implement searching in MailStation
                     var searchKey = SearchParser.Parse(requestOptions.AsString());
                     var list = station.SearchMailbox(context.SelectedMailbox, searchKey);
-                    response.AppendLine(ImapResponse.Untagged, searchHint, Conversions.AsSpan(string.Join(' ', list)));
+                    response.AppendLine(ImapResponse.Untagged, searchHint, string.Join(' ', list).AsAsciiSpan());
                     response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                 } else
                 {

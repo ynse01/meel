@@ -5,7 +5,7 @@ namespace Meel.Parsing
 {
     public static class SequenceSetParser
     {
-        public static HashSet<int> ParseBySequenceId(string sequenceSet, int messageCount)
+        public static HashSet<int> ParseBySequenceId(ReadOnlySpan<byte> input, int messageCount)
         {
             // RFC3501 Page 89: sequence-set 
             // Example: a message sequence number set of
@@ -16,32 +16,41 @@ namespace Meel.Parsing
             // 10,9,8,7,6,5,4,5,6,7 and MAY be reordered and
             // overlap coalesced to be 4,5,6,7,8,9,10.
             var set = new HashSet<int>();
-            var setParts = sequenceSet.Split(',');
-            foreach (var sequence in setParts)
+            while(!input.IsEmpty)
             {
-                var seqParts = sequence.Split(':');
-                if (seqParts.Length > 1)
+                var partIndex = input.IndexOf(LexiConstants.Comma);
+                ReadOnlySpan<byte> sequence;
+                if (partIndex == -1)
                 {
+                    sequence = input;
+                    partIndex = input.Length;
+                    input = ReadOnlySpan<byte>.Empty;
+                } else
+                {
+                    sequence = input.Slice(0, partIndex);
+                    input = input.Slice(partIndex + 1);
+                }
+                var index = sequence.IndexOf(LexiConstants.Colon);
+                if (index >= 1)
+                {
+                    var leftSpan = sequence.Slice(0, index);
+                    var rightSpan = sequence.Slice(index + 1);
                     int lower = -1;
                     int upper = -1;
-                    if (seqParts[0] == "*")
+                    if (leftSpan[0] == LexiConstants.Asterisk)
                     {
-                        if (int.TryParse(seqParts[1], out lower))
-                        {
-                            upper = messageCount - 1;
-                        }
+                        lower = rightSpan.AsNumber();
+                        upper = messageCount;
                     }
-                    else if (seqParts[1] == "*")
+                    else if (rightSpan[0] == LexiConstants.Asterisk)
                     {
-                        if (int.TryParse(seqParts[0], out lower))
-                        {
-                            upper = messageCount - 1;
-                        }
+                        lower = leftSpan.AsNumber();
+                        upper = messageCount;
                     }
                     else
                     {
-                        int.TryParse(seqParts[0], out lower);
-                        int.TryParse(seqParts[1], out upper);
+                        lower = leftSpan.AsNumber();
+                        upper = rightSpan.AsNumber();
                     }
                     // Make sure upper is higher then lower
                     if (upper < lower)
@@ -52,7 +61,7 @@ namespace Meel.Parsing
                     }
                     if (upper >= 0 && lower >= 0)
                     {
-                        for (var i = lower; i < upper; i++)
+                        for (var i = lower; i <= upper; i++)
                         {
                             set.Add(i);
                         }
@@ -60,13 +69,11 @@ namespace Meel.Parsing
                 }
                 else
                 {
-                    if (int.TryParse(sequence, out int id))
-                    {
-                        set.Add(id);
-                    }
+                    // Expecting just a single number
+                    set.Add(sequence.AsNumber());
                 }
             }
-            return null;
+            return set;
         }
 
         public static HashSet<string> ParseByUid(string sequenceSet, string maxUid)

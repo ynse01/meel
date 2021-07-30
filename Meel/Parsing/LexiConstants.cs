@@ -15,6 +15,9 @@ namespace Meel.Parsing
         public const byte CurlyOpenBrace = 0x7b;
         public const byte CurlyCloseBrace = 0x7d;
         public const byte DoubleQuote = 0x22;
+        public const byte Comma = 0x2c;
+        public const byte Colon = 0x3a;
+        public const byte Asterisk = 0x2a;
 
         public const byte Number0 = 0x30;
         public const byte Number1 = 0x31;
@@ -80,5 +83,10 @@ namespace Meel.Parsing
         public static readonly byte[] Status = new byte[] { S, T, A, T, U, S };
         public static readonly byte[] Subscribe = new byte[] { S, U, B, S, C, R, I, B, E };
         public static readonly byte[] Unsubscribe = new byte[] { U, N, S, U, B, S, C, R, I, B, E };
+
+        public static bool IsDigit(byte input)
+        {
+            return input >= Number0 && input <= Number9;
+        }
     }
 }

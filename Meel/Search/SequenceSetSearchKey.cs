@@ -8,7 +8,7 @@ namespace Meel.Search
     {
         private ICollection<int> list;
 
-        public SequenceSetSearchKey(string sequence, int maxId)
+        public SequenceSetSearchKey(ReadOnlySpan<byte> sequence, int maxId)
         {
             list = SequenceSetParser.ParseBySequenceId(sequence, maxId);
         }

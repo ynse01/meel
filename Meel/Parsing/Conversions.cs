@@ -17,14 +17,14 @@ namespace Meel.Parsing
             return Encoding.ASCII.GetString(span);
         }
 
-        public static Span<byte> AsSpan(this string txt)
+        public static Span<byte> AsAsciiSpan(this string txt)
         {
             return Encoding.ASCII.GetBytes(txt);
         }
 
         public static Span<byte> AsSpan(this int number)
         {
-            return AsSpan(number.ToString());
+            return AsAsciiSpan(number.ToString());
         }
 
         public static ReadOnlySpan<byte> AsSpan(this ReadOnlySequence<byte> sequence)
@@ -38,6 +38,23 @@ namespace Meel.Parsing
                 result = sequence.ToArray();
             }
             return result;
+        }
+
+        public static int AsNumber(this ReadOnlySpan<byte> span)
+        {
+            int number = 0;
+            for(var i = 0; i < span.Length; i++)
+            {
+                if (LexiConstants.IsDigit(span[i]))
+                {
+                    number *= 10;
+                    number += span[i] - LexiConstants.Number0;
+                } else
+                {
+                    break;
+                }
+            }
+            return number;
         }
     }
 }
