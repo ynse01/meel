@@ -49,7 +49,6 @@ namespace Meel
 
         private void HandleCommand(ReadOnlySequence<byte> line)
         {
-            Console.WriteLine("Received {0}", line);
             if (!line.IsEmpty)
             {
                 var reader = new SequenceReader<byte>(line);
@@ -62,7 +61,9 @@ namespace Meel
                     }
                     else if (command == ImapCommands.Uid)
                     {
-
+                        reader.Advance(4);
+                        command = CommandParser.Parse(reader, out options);
+                        ExecuteCommand(command, requestId, options);
                     } else
                     {
                         ExecuteCommand(command, requestId, options);
@@ -73,12 +74,6 @@ namespace Meel
                     ExecuteCommand(ImapCommands.Bad, line, ReadOnlySpan<byte>.Empty);
                 }
             }
-        }
-
-        private ReadOnlySequence<byte> ReadToken(ReadOnlySequence<byte> haystack)
-        {
-            var pos = haystack.PositionOf(LexiConstants.Space);
-            return haystack.Slice(0, pos.Value);
         }
 
         private void HandleLiteral(ReadOnlySequence<byte> data)
