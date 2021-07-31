@@ -37,7 +37,7 @@ namespace Meel.Commands
                 context.SetSelectedMailbox(mailbox);
                 if (!requestOptions.IsEmpty)
                 {
-                    var lineLength = 20 + permFlagsHint.Length;
+                    var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
                     response.Allocate((6 * lineLength) + requestId.Length + readWriteHint.Length + completedHint.Length);
                     var numMessages = mailbox.NumberOfMessages.AsSpan();
                     var numRecent = mailbox.NumberOfMessages.AsSpan();
