@@ -30,22 +30,79 @@ namespace Meel.Parsing
         private static ImapCommands ReadCommand(ReadOnlySpan<byte> span)
         {
             ImapCommands command;
-            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Append))
+            var length = span.Length;
+            switch(length)
             {
-                command = ImapCommands.Append;
-            } else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Authenticate))
-            {
-                command = ImapCommands.Authenticate;
+                case 3:
+                    command = ReadCommandWithLength3(span);
+                    break;
+                case 4:
+                    command = ReadCommandWithLength4(span);
+                    break;
+                case 5:
+                    command = ReadCommandWithLength5(span);
+                    break;
+                case 6:
+                    command = ReadCommandWithLength6(span);
+                    break;
+                case 7:
+                    command = ReadCommandWithLength7(span);
+                    break;
+                default:
+                    command = ReadCommandWithLongerLength(span);
+                    break;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Bad))
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLength3(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Bad))
             {
                 command = ImapCommands.Bad;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Capability))
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Uid))
             {
-                command = ImapCommands.Capability;
+                command = ImapCommands.Uid;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Check))
+            else
+            {
+                command = ImapCommands.Bad;
+            }
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLength4(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Copy))
+            {
+                command = ImapCommands.Copy;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.List))
+            {
+                command = ImapCommands.List;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.LSub))
+            {
+                command = ImapCommands.LSub;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Noop))
+            {
+                command = ImapCommands.Noop;
+            }
+            else
+            {
+                command = ImapCommands.Bad;
+            }
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLength5(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Check))
             {
                 command = ImapCommands.Check;
             }
@@ -53,9 +110,31 @@ namespace Meel.Parsing
             {
                 command = ImapCommands.Close;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Copy))
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Fetch))
             {
-                command = ImapCommands.Copy;
+                command = ImapCommands.Fetch;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Login))
+            {
+                command = ImapCommands.Login;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Store))
+            {
+                command = ImapCommands.Store;
+            }
+            else
+            {
+                command = ImapCommands.Bad;
+            }
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLength6(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Append))
+            {
+                command = ImapCommands.Append;
             }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Create))
             {
@@ -65,37 +144,9 @@ namespace Meel.Parsing
             {
                 command = ImapCommands.Delete;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Examine))
-            {
-                command = ImapCommands.Examine;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Expunge))
-            {
-                command = ImapCommands.Expunge;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Fetch))
-            {
-                command = ImapCommands.Fetch;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.List))
-            {
-                command = ImapCommands.List;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Login))
-            {
-                command = ImapCommands.Login;
-            }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Logout))
             {
-                command = ImapCommands.Logout ;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.LSub))
-            {
-                command = ImapCommands.LSub;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Noop))
-            {
-                command = ImapCommands.Noop;
+                command = ImapCommands.Logout;
             }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Rename))
             {
@@ -109,25 +160,53 @@ namespace Meel.Parsing
             {
                 command = ImapCommands.Select;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.StartTls))
-            {
-                command = ImapCommands.StartTls;
-            }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Status))
             {
                 command = ImapCommands.Status;
             }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Store))
+            else
             {
-                command = ImapCommands.Store;
+                command = ImapCommands.Bad;
+            }
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLength7(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Examine))
+            {
+                command = ImapCommands.Examine;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Expunge))
+            {
+                command = ImapCommands.Expunge;
+            }
+            else
+            {
+                command = ImapCommands.Bad;
+            }
+            return command;
+        }
+
+        private static ImapCommands ReadCommandWithLongerLength(ReadOnlySpan<byte> span)
+        {
+            ImapCommands command;
+            if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Authenticate))
+            {
+                command = ImapCommands.Authenticate;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Capability))
+            {
+                command = ImapCommands.Capability;
+            }
+            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.StartTls))
+            {
+                command = ImapCommands.StartTls;
             }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Subscribe))
             {
                 command = ImapCommands.Subscribe;
-            }
-            else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Uid))
-            {
-                command = ImapCommands.Uid;
             }
             else if (AsciiComparer.CompareIgnoreCase(span, LexiConstants.Unsubscribe))
             {
@@ -139,5 +218,6 @@ namespace Meel.Parsing
             }
             return command;
         }
+
     }
 }
