@@ -19,7 +19,7 @@ namespace Meel.Search
             return SearchDepth.Header;
         }
         
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return message.Message.Headers[name].Contains(value, StringComparison.OrdinalIgnoreCase);
         }

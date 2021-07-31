@@ -17,7 +17,7 @@ namespace Meel.Search
             return SearchDepth.Header;
         }
 
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             var subject = message.Message.Subject;
             return subject.Contains(needle, StringComparison.OrdinalIgnoreCase);

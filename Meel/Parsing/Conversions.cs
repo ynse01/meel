@@ -27,6 +27,11 @@ namespace Meel.Parsing
             return AsAsciiSpan(number.ToString());
         }
 
+        public static Span<byte> AsSpan(this uint number)
+        {
+            return AsAsciiSpan(number.ToString());
+        }
+
         public static ReadOnlySpan<byte> AsSpan(this ReadOnlySequence<byte> sequence)
         {
             ReadOnlySpan<byte> result;
@@ -40,15 +45,15 @@ namespace Meel.Parsing
             return result;
         }
 
-        public static int AsNumber(this ReadOnlySpan<byte> span)
+        public static uint AsNumber(this ReadOnlySpan<byte> span)
         {
-            int number = 0;
+            uint number = 0;
             for(var i = 0; i < span.Length; i++)
             {
                 if (LexiConstants.IsDigit(span[i]))
                 {
                     number *= 10;
-                    number += span[i] - LexiConstants.Number0;
+                    number += (uint)(span[i] - LexiConstants.Number0);
                 } else
                 {
                     break;

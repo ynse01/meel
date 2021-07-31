@@ -4,9 +4,9 @@ namespace Meel.Search
 {
     public class SmallerSearchKey : ISearchKey
     {
-        private int size;
+        private uint size;
         
-        public SmallerSearchKey(int size)
+        public SmallerSearchKey(uint size)
         {
             this.size = size;
         }
@@ -16,7 +16,7 @@ namespace Meel.Search
             return SearchDepth.Size;
         }
 
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return message.Size < size;
         }

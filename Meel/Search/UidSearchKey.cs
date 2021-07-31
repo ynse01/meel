@@ -6,9 +6,9 @@ namespace Meel.Search
 {
     public class UidSearchKey : ISearchKey
     {
-        private ICollection<int> uids;
+        private ICollection<uint> uids;
 
-        public UidSearchKey(ReadOnlySpan<byte> sequence, int maxUid)
+        public UidSearchKey(ReadOnlySpan<byte> sequence, uint maxUid)
         {
             uids = SequenceSetParser.Parse(sequence, maxUid);
         }
@@ -18,7 +18,7 @@ namespace Meel.Search
             return SearchDepth.Uid;
         }
 
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return uids.Contains(message.Uid);
         }

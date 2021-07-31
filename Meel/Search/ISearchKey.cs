@@ -17,6 +17,6 @@ namespace Meel.Search
     {
         SearchDepth GetSearchDepth();
 
-        bool Matches(ImapMessage message, int sequenceId);
+        bool Matches(ImapMessage message, uint sequenceId);
     }
 }

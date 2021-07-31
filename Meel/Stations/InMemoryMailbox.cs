@@ -13,14 +13,14 @@ namespace Meel.Stations
             // Nothing to do here.
         }
 
-        public override ImapMessage GetMessage(int sequenceId)
+        public override ImapMessage GetMessage(uint sequenceId)
         {
-            return messages[sequenceId];
+            return messages[(int)sequenceId];
         }
 
-        public override int GetSequenceNumber(ImapMessage message)
+        public override uint GetSequenceNumber(ImapMessage message)
         {
-            return messages.IndexOf(message);
+            return (uint)messages.IndexOf(message);
         }
 
         public bool Subscribed { get; set; }
@@ -37,31 +37,31 @@ namespace Meel.Stations
             return result;
         }
 
-        public List<int> Expunge()
+        public List<uint> Expunge()
         {
             return null;
         }
 
-        public List<int> SearchMessagesBySequence(ISearchKey searchKey)
+        public List<uint> SearchMessagesBySequence(ISearchKey searchKey)
         {
-            var found = new List<int>();
+            var found = new List<uint>();
             for(var i = 0; i < messages.Count; i++)
             {
-                if (searchKey.Matches(messages[i], i + 1))
+                if (searchKey.Matches(messages[i], (uint)(i + 1)))
                 {
-                    found.Add(i + 1);
+                    found.Add((uint)(i + 1));
                 }
             }
             return found;
         }
 
-        public List<int> SearchMessagesByUid(ISearchKey searchKey)
+        public List<uint> SearchMessagesByUid(ISearchKey searchKey)
         {
-            var found = new List<int>();
+            var found = new List<uint>();
             for (var i = 0; i < messages.Count; i++)
             {
                 var message = messages[i];
-                if (searchKey.Matches(message, i + 1))
+                if (searchKey.Matches(message, (uint)(i + 1)))
                 {
                     found.Add(message.Uid);
                 }
@@ -74,9 +74,9 @@ namespace Meel.Stations
             CanWrite = false;
         }
 
-        public int Sequence2Uid(int sequenceId)
+        public uint Sequence2Uid(uint sequenceId)
         {
-            return messages[sequenceId].Uid;
+            return messages[(int)(sequenceId - 1)].Uid;
         }
 
         private void UpdateStatistics()

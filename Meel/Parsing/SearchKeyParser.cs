@@ -5,12 +5,12 @@ namespace Meel.Parsing
 {
     public static class SearchKeyParser
     {
-        public static ISearchKey Parse(ReadOnlySpan<byte> query, int numMessages)
+        public static ISearchKey Parse(ReadOnlySpan<byte> query, uint numMessages)
         {
             return Parse(ref query, numMessages);
         }
 
-        private static ISearchKey Parse(ref ReadOnlySpan<byte> query, int numMessages)
+        private static ISearchKey Parse(ref ReadOnlySpan<byte> query, uint numMessages)
         {
             ReadOnlySpan<byte> current = ReadNextToken(ref query);
             ISearchKey key;

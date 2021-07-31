@@ -38,13 +38,13 @@ namespace Meel.Stations
             return true;
         }
 
-        public List<int> ExpungeBySequence(Mailbox mailbox)
+        public List<uint> ExpungeBySequence(Mailbox mailbox)
         {
             var sequences = ((MaildirMailbox)mailbox).Expunge();
             return sequences;
         }
 
-        public List<int> ExpungeByUid(Mailbox mailbox)
+        public List<uint> ExpungeByUid(Mailbox mailbox)
         {
             var mdmb = (MaildirMailbox)mailbox;
             var uids = ExpungeBySequence(mailbox).Select(s => mdmb.Sequence2Uid(s)).ToList();
@@ -67,9 +67,9 @@ namespace Meel.Stations
             return true;
         }
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence)
+        public List<uint> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence)
         {
-            List<int> list;
+            List<uint> list;
             if (useSequence)
             {
                 list = ((MaildirMailbox)mailbox).SearchMessagesBySequence(searchKey);

@@ -18,12 +18,12 @@ namespace Meel
 
         public List<string> ListMailboxes(string user, bool subscribed);
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence);
+        public List<uint> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence);
 
         public bool AppendToMailbox(Mailbox mailbox, ImapMessage message);
 
-        public List<int> ExpungeBySequence(Mailbox mailbox);
+        public List<uint> ExpungeBySequence(Mailbox mailbox);
 
-        public List<int> ExpungeByUid(Mailbox mailbox);
+        public List<uint> ExpungeByUid(Mailbox mailbox);
     }
 }

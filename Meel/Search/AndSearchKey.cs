@@ -18,7 +18,7 @@ namespace Meel.Search
             return left.GetSearchDepth() | right.GetSearchDepth();
         }
 
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return left.Matches(message, sequenceId) && right.Matches(message, sequenceId);
         }

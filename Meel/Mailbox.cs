@@ -9,6 +9,8 @@ namespace Meel
             CanWrite = true;
         }
 
+        public uint Uid { get; protected set; }
+
         public int NumberOfMessages { get; protected set; }
 
         public int NumberOfRecentMessages { get; protected set; }
@@ -19,8 +21,8 @@ namespace Meel
 
         public abstract void Select();
 
-        public abstract ImapMessage GetMessage(int sequenceId);
+        public abstract ImapMessage GetMessage(uint sequenceId);
 
-        public abstract int GetSequenceNumber(ImapMessage message);
+        public abstract uint GetSequenceNumber(ImapMessage message);
     }
 }

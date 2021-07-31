@@ -22,7 +22,7 @@ namespace Meel.Commands
                 if (!requestOptions.IsEmpty)
                 {
                     var numMessages = context.SelectedMailbox.NumberOfMessages;
-                    var searchKey = SearchKeyParser.Parse(requestOptions, numMessages);
+                    var searchKey = SearchKeyParser.Parse(requestOptions, (uint)numMessages);
                     // TODO: Specify UID mode
                     var list = station.SearchMailbox(context.SelectedMailbox, searchKey, true);
                     response.AppendLine(ImapResponse.Untagged, searchHint, string.Join(' ', list).AsAsciiSpan());

@@ -9,7 +9,7 @@ namespace Meel.Search
             return SearchDepth.None;
         }
         
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return true;
         }

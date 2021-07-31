@@ -21,7 +21,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "All";
-            var expected = new int[] { 1, 2, 3, 4 };
+            var expected = new uint[] { 1, 2, 3, 4 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -33,7 +33,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "NOT All";
-            var expected = new int[0];
+            var expected = new uint[0];
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -45,7 +45,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "DRAFT";
-            var expected = new int[] { 3 };
+            var expected = new uint[] { 3 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -57,7 +57,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "UNDRAFT";
-            var expected = new int[] { 1, 2, 4 };
+            var expected = new uint[] { 1, 2, 4 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -69,7 +69,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "SEEN";
-            var expected = new int[] { 2, 3 };
+            var expected = new uint[] { 2, 3 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -81,7 +81,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "NEW";
-            var expected = new int[] { 4 };
+            var expected = new uint[] { 4 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -93,7 +93,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "OLD";
-            var expected = new int[] { 1, 3 };
+            var expected = new uint[] { 1, 3 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -105,7 +105,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "RECENT";
-            var expected = new int[] { 2, 4 };
+            var expected = new uint[] { 2, 4 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -117,7 +117,7 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "SMALLER 256";
-            var expected = new int[] { 4 };
+            var expected = new uint[] { 4 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
@@ -129,16 +129,16 @@ namespace Meel.Tests
         {
             // Arrange
             var query = "LARGER 256";
-            var expected = new int[] { 2 };
+            var expected = new uint[] { 2 };
             // Act
             var actual = GetMachingMessages(query);
             // Assert
             CollectionAssert.AreEquivalent(expected, actual);
         }
 
-        private List<int> GetMachingMessages(string query)
+        private List<uint> GetMachingMessages(string query)
         {
-            var numMessages = messages.Length;
+            var numMessages = (uint)messages.Length;
             var key = SearchKeyParser.Parse(query.AsAsciiSpan(), numMessages);
             return messages
                 .Where(messages => key.Matches(messages, numMessages))

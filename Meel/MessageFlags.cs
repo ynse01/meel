@@ -9,7 +9,7 @@ namespace Meel
         Draft = 1,
         Recent = 2,
         Seen = 4,
-        Trashed = 8,
+        Deleted = 8,
         Flagged = 16,
         Answered = 32
     }

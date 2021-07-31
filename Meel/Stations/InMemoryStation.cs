@@ -48,12 +48,12 @@ namespace Meel.Stations
             return ((InMemoryMailbox)mailbox).AppendMessage(message);
         }
 
-        public List<int> ExpungeBySequence(Mailbox mailbox)
+        public List<uint> ExpungeBySequence(Mailbox mailbox)
         {
             return ((InMemoryMailbox)mailbox).Expunge();
         }
 
-        public List<int> ExpungeByUid(Mailbox mailbox)
+        public List<uint> ExpungeByUid(Mailbox mailbox)
         {
             var immb = (InMemoryMailbox)mailbox;
             return immb.Expunge().Select(s => immb.Sequence2Uid(s)).ToList();
@@ -64,10 +64,10 @@ namespace Meel.Stations
             return mailboxes.Keys.Where(name => name.StartsWith(user)).ToList();
         }
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence) 
+        public List<uint> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence) 
         {
             var immb = (InMemoryMailbox)mailbox;
-            List<int> list;
+            List<uint> list;
             if (useSequence)
             {
                 list = immb.SearchMessagesBySequence(searchKey);

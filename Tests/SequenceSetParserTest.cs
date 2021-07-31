@@ -15,8 +15,8 @@ namespace Meel.Tests
             
             // Arrange
             var query = "2,4:7,9,12:*";
-            var expected = new int[] { 2, 4, 5, 6, 7, 9, 12, 13, 14, 15 };
-            var numMessages = 15;
+            var expected = new uint[] { 2, 4, 5, 6, 7, 9, 12, 13, 14, 15 };
+            var numMessages = 15u;
             // Act
             var actual = SequenceSetParser.Parse(query.AsAsciiSpan(), numMessages);
             // Assert
@@ -33,8 +33,8 @@ namespace Meel.Tests
 
             // Arrange
             var query = "*:4,5:7";
-            var expected = new int[] { 4, 5, 6, 7, 8, 9, 10 };
-            var numMessages = 10;
+            var expected = new uint[] { 4, 5, 6, 7, 8, 9, 10 };
+            var numMessages = 10u;
             // Act
             var actual = SequenceSetParser.Parse(query.AsAsciiSpan(), numMessages);
             // Assert

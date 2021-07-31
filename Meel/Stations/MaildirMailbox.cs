@@ -34,9 +34,9 @@ namespace Meel.Stations
             SyncWithDisk();
         }
 
-        public override ImapMessage GetMessage(int sequenceId)
+        public override ImapMessage GetMessage(uint sequenceId)
         {
-            var filename = files[sequenceId];
+            var filename = files[(int)sequenceId];
             using (var stream = new FileStream(filename, FileMode.Open))
             {
                 var message = MimeMessage.Load(stream);
@@ -46,10 +46,10 @@ namespace Meel.Stations
             }
         }
 
-        public override int GetSequenceNumber(ImapMessage message)
+        public override uint GetSequenceNumber(ImapMessage message)
         {
             // TODO: Implement
-            return -1;
+            return 0;
         }
 
         public bool AppendMessage(ImapMessage message)
@@ -64,36 +64,36 @@ namespace Meel.Stations
             return true;
         }
 
-        public List<int> Expunge()
+        public List<uint> Expunge()
         {
-            var deleted = new List<int>();
+            var deleted = new List<uint>();
             // TODO: Implement
             return deleted;
         }
 
-        public List<int> SearchMessagesBySequence(ISearchKey searchKey)
+        public List<uint> SearchMessagesBySequence(ISearchKey searchKey)
         {
-            var found = new List<int>();
+            var found = new List<uint>();
             var needsFullLoad = NeedsFullLoad(searchKey);
             for (var i = 0; i < files.Count; i++)
             {
                 var message = OpenMessage(files[i], needsFullLoad);
-                if (searchKey.Matches(message, i + 1))
+                if (searchKey.Matches(message, (uint)(i + 1)))
                 {
-                    found.Add(i + 1);
+                    found.Add((uint)(i + 1));
                 }
             }
             return found;
         }
 
-        public List<int> SearchMessagesByUid(ISearchKey searchKey)
+        public List<uint> SearchMessagesByUid(ISearchKey searchKey)
         {
-            var found = new List<int>();
+            var found = new List<uint>();
             var needsFullLoad = NeedsFullLoad(searchKey);
-            for (var i = 0; i < files.Count; i++)
+            for (int i = 0; i < files.Count; i++)
             {
                 var message = OpenMessage(files[i], needsFullLoad);
-                if (searchKey.Matches(message, i + 1))
+                if (searchKey.Matches(message, (uint)(i + 1)))
                 {
                     found.Add(message.Uid);
                 }
@@ -101,14 +101,14 @@ namespace Meel.Stations
             return found;
         }
 
-        public int Sequence2Uid(int sequenceId)
+        public uint Sequence2Uid(uint sequenceId)
         {
-            return GetUid(files[sequenceId - 1]);
+            return GetUid(files[(int)(sequenceId - 1)]);
         }
 
-        public int GetUid(string filename)
+        public uint GetUid(string filename)
         {
-            return 0;
+            return uint.Parse(filename.Split('.', 1)[0]);
         }
 
         private void SyncWithDisk()
@@ -161,7 +161,7 @@ namespace Meel.Stations
                         break;
                     case 'R':
                     case 'r':
-                        flags |= MessageFlags.Recent;
+                        flags |= MessageFlags.Answered;
                         break;
                     case 'S':
                     case 's':
@@ -169,7 +169,7 @@ namespace Meel.Stations
                         break;
                     case 'T':
                     case 't':
-                        flags |= MessageFlags.Trashed;
+                        flags |= MessageFlags.Deleted;
                         break;
                     case 'F':
                     case 'f':

@@ -16,7 +16,7 @@ namespace Meel.Search
             return SearchDepth.Flags;
         }
 
-        public bool Matches(ImapMessage message, int sequenceId)
+        public bool Matches(ImapMessage message, uint sequenceId)
         {
             return inverted ^ message.Deleted;
         }

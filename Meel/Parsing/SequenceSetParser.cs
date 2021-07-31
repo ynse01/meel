@@ -8,7 +8,7 @@ namespace Meel.Parsing
     /// </summary>
     public static class SequenceSetParser
     {
-        public static HashSet<int> Parse(ReadOnlySpan<byte> input, int messageCount)
+        public static HashSet<uint> Parse(ReadOnlySpan<byte> input, uint messageCount)
         {
             // RFC3501 Page 89: sequence-set 
             // Example: a message sequence number set of
@@ -18,7 +18,7 @@ namespace Meel.Parsing
             // for a mailbox with 10 messages is equivalent to
             // 10,9,8,7,6,5,4,5,6,7 and MAY be reordered and
             // overlap coalesced to be 4,5,6,7,8,9,10.
-            var set = new HashSet<int>();
+            var set = new HashSet<uint>();
             while(!input.IsEmpty)
             {
                 var partIndex = input.IndexOf(LexiConstants.Comma);
@@ -38,8 +38,8 @@ namespace Meel.Parsing
                 {
                     var leftSpan = sequence.Slice(0, index);
                     var rightSpan = sequence.Slice(index + 1);
-                    int lower;
-                    int upper;
+                    uint lower;
+                    uint upper;
                     if (leftSpan[0] == LexiConstants.Asterisk)
                     {
                         lower = rightSpan.AsNumber();

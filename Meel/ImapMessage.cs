@@ -4,19 +4,19 @@ namespace Meel
 {
     public class ImapMessage
     {
-        public ImapMessage(MimeMessage message, int uid, MessageFlags flags, long size)
+        public ImapMessage(MimeMessage message, uint uid, MessageFlags flags, long size)
         {
             Message = message;
             Uid = uid;
             Seen = flags.HasFlag(MessageFlags.Seen);
-            Deleted = flags.HasFlag(MessageFlags.Trashed);
+            Deleted = flags.HasFlag(MessageFlags.Deleted);
             Flagged = flags.HasFlag(MessageFlags.Flagged);
             Draft = flags.HasFlag(MessageFlags.Draft);
             Recent = flags.HasFlag(MessageFlags.Recent);
             Size = size;
         }
 
-        public int Uid { get; private set; }
+        public uint Uid { get; private set; }
 
         public long Size { get; private set; }
 
