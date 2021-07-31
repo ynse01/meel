@@ -14,6 +14,11 @@ namespace Meel.Stations
             this.path = path;
         }
 
+        public void Dispose()
+        {
+            // Nothig to do here.
+        }
+
         public bool AppendToMailbox(Mailbox mailbox, ImapMessage message)
         {
             return ((MaildirMailbox)mailbox).AppendMessage(message);

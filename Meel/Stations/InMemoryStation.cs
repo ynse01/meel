@@ -14,6 +14,11 @@ namespace Meel.Stations
             mailboxes = new Dictionary<string, InMemoryMailbox>(StringComparer.OrdinalIgnoreCase);
         }
 
+        public void Dispose()
+        {
+            // Nothig to do here.
+        }
+
         public bool CreateMailbox(string user, string name)
         {
             bool result = false;

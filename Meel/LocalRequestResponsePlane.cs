@@ -18,6 +18,11 @@ namespace Meel
             factory = new CommandFactory(station);
         }
 
+        public void Dispose()
+        {
+            // Nothing to do.
+        }
+
         public IIdentifyable CreateSession(long uid)
         {
             return new ConnectionContext(uid);

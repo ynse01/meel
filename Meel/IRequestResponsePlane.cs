@@ -10,7 +10,7 @@ namespace Meel
         long Uid { get; }
     }
 
-    public interface IRequestResponsePlane
+    public interface IRequestResponsePlane : IDisposable
     {
         IIdentifyable CreateSession(long uid);
 

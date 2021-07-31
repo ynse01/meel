@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace Meel
 {
-    public class ServerSession
+    public sealed class ServerSession : IDisposable
     {
         private static readonly byte[] StartTlsWarning = 
             Encoding.ASCII.GetBytes(" OK Begin TLS negotiation now\r\n");
@@ -33,6 +33,14 @@ namespace Meel
             expectLiteralOfSize = 0;
             this.writer = writer;
             sessionId = plane.CreateSession(Interlocked.Increment(ref nextSessionId));
+        }
+
+        public void Dispose()
+        {
+            writer?.Complete();
+            writer = null;
+            stream?.Dispose();
+            stream = null;
         }
 
         internal void HandleLine(ReadOnlySequence<byte> line)
@@ -85,6 +93,7 @@ namespace Meel
                     ImapResponse response = new ImapResponse(writer);
                     responsePlane.ReceiveLiteral(literalCommand, sessionId, literalRequestId, data, ref response);
                     response.SendToPipe();
+                    writer.FlushAsync();
                 }
             } else
             {
@@ -98,6 +107,7 @@ namespace Meel
             var literalSize = responsePlane.HandleRequest(command, sessionId, requestId, options, ref response);
             Console.WriteLine($"Command {command} returned {response.ToString()}");
             response.SendToPipe();
+            writer.FlushAsync();
             if (literalSize > 0)
             {
                 expectLiteralOfSize = literalSize;

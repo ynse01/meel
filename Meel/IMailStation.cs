@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Meel.Search;
 
 namespace Meel
 {
-    public interface IMailStation
+    public interface IMailStation : IDisposable
     {
         public Mailbox SelectMailbox(string user, string name);
 

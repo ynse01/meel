@@ -21,6 +21,8 @@ namespace Meel
 
         public async Task Listen()
         {
+            var station = new InMemoryStation();
+            var plane = new LocalRequestResponsePlane(station);
             try
             {
                 server.Start();
@@ -29,8 +31,6 @@ namespace Meel
                     Console.WriteLine("Waiting for a connection...");
                     var client = await server.AcceptTcpClientAsync();
                     Console.WriteLine("Connected!");
-                    var station = new InMemoryStation();
-                    var plane = new LocalRequestResponsePlane(station);
                     var session = new ServerPipe(plane);
                     var id = Interlocked.Increment(ref lastId);
                     _ = session.ProcessAsync(client);
@@ -41,6 +41,7 @@ namespace Meel
                 Console.WriteLine($"Socket exception: {ex}");
                 server.Stop();
             }
+            station.Dispose();
         }
 
     }
