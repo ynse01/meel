@@ -11,7 +11,12 @@ namespace Meel.Search
             this.size = size;
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Size;
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             return message.Size < size;
         }

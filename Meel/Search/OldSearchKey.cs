@@ -4,7 +4,12 @@ namespace Meel.Search
 {
     public class OldSearchKey : ISearchKey
     {
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Flags;
+        }
+        
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             return !message.Recent;
         }

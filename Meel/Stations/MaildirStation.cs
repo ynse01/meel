@@ -67,9 +67,17 @@ namespace Meel.Stations
             return true;
         }
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey)
+        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence)
         {
-            return ((MaildirMailbox)mailbox).SearchMessages(searchKey);
+            List<int> list;
+            if (useSequence)
+            {
+                list = ((MaildirMailbox)mailbox).SearchMessagesBySequence(searchKey);
+            } else
+            {
+                list = ((MaildirMailbox)mailbox).SearchMessagesByUid(searchKey);
+            }
+            return list;
         }
 
         public Mailbox SelectMailbox(string user, string name)

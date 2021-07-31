@@ -18,7 +18,7 @@ namespace Meel
 
         public List<string> ListMailboxes(string user, bool subscribed);
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey);
+        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence);
 
         public bool AppendToMailbox(Mailbox mailbox, ImapMessage message);
 

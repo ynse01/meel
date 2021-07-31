@@ -13,9 +13,14 @@ namespace Meel.Search
             this.right = right;
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
         {
-            return left.Matches(message, sequence) || right.Matches(message, sequence);
+            return left.GetSearchDepth() | right.GetSearchDepth();
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
+        {
+            return left.Matches(message, sequenceId) || right.Matches(message, sequenceId);
         }
     }
 }

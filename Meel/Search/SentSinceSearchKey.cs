@@ -12,7 +12,12 @@ namespace Meel.Search
             date = DateTimeOffset.Parse(before.AsString()).Date;
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Header;
+        }
+        
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             return message.Message.Date.Date.CompareTo(date) > 0;
         }

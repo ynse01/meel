@@ -42,10 +42,31 @@ namespace Meel.Stations
             return null;
         }
 
-        public List<int> SearchMessages(ISearchKey searchKey)
+        public List<int> SearchMessagesBySequence(ISearchKey searchKey)
         {
-            // TODO: Implement
-            return null;
+            var found = new List<int>();
+            for(var i = 0; i < messages.Count; i++)
+            {
+                if (searchKey.Matches(messages[i], i + 1))
+                {
+                    found.Add(i + 1);
+                }
+            }
+            return found;
+        }
+
+        public List<int> SearchMessagesByUid(ISearchKey searchKey)
+        {
+            var found = new List<int>();
+            for (var i = 0; i < messages.Count; i++)
+            {
+                var message = messages[i];
+                if (searchKey.Matches(message, i + 1))
+                {
+                    found.Add(message.Uid);
+                }
+            }
+            return found;
         }
 
         public void SetReadonly()

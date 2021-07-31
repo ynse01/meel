@@ -21,10 +21,10 @@ namespace Meel.Commands
             if (context.State == SessionState.Selected) {
                 if (!requestOptions.IsEmpty)
                 {
-                    // TODO: Implement searching in MailStation
                     var numMessages = context.SelectedMailbox.NumberOfMessages;
                     var searchKey = SearchKeyParser.Parse(requestOptions, numMessages);
-                    var list = station.SearchMailbox(context.SelectedMailbox, searchKey);
+                    // TODO: Specify UID mode
+                    var list = station.SearchMailbox(context.SelectedMailbox, searchKey, true);
                     response.AppendLine(ImapResponse.Untagged, searchHint, string.Join(' ', list).AsAsciiSpan());
                     response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                 } else

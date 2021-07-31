@@ -71,15 +71,39 @@ namespace Meel.Stations
             return deleted;
         }
 
-        public List<int> SearchMessages(ISearchKey searchKey)
+        public List<int> SearchMessagesBySequence(ISearchKey searchKey)
         {
-            // TODO: Implement
-            return null;
+            var found = new List<int>();
+            var needsFullLoad = NeedsFullLoad(searchKey);
+            for (var i = 0; i < files.Count; i++)
+            {
+                var message = OpenMessage(files[i], needsFullLoad);
+                if (searchKey.Matches(message, i + 1))
+                {
+                    found.Add(i + 1);
+                }
+            }
+            return found;
+        }
+
+        public List<int> SearchMessagesByUid(ISearchKey searchKey)
+        {
+            var found = new List<int>();
+            var needsFullLoad = NeedsFullLoad(searchKey);
+            for (var i = 0; i < files.Count; i++)
+            {
+                var message = OpenMessage(files[i], needsFullLoad);
+                if (searchKey.Matches(message, i + 1))
+                {
+                    found.Add(message.Uid);
+                }
+            }
+            return found;
         }
 
         public int Sequence2Uid(int sequenceId)
         {
-            return GetUid(files[sequenceId]);
+            return GetUid(files[sequenceId - 1]);
         }
 
         public int GetUid(string filename)
@@ -157,6 +181,28 @@ namespace Meel.Stations
                 }
             }
             return flags;
+        }
+
+        private bool NeedsFullLoad(ISearchKey searchKey)
+        {
+            var searchDepth = searchKey.GetSearchDepth();
+            var needsFullLoad = searchDepth.HasFlag(SearchDepth.Header) | searchDepth.HasFlag(SearchDepth.Body);
+            return needsFullLoad;
+        }
+
+        private ImapMessage OpenMessage(string filename, bool loadFully)
+        {
+            MimeMessage mime = null;
+            var fullPath = Path.Combine(path, filename);
+            if (loadFully)
+            {
+                mime = MimeMessage.Load(fullPath);
+            }
+            var uid = GetUid(filename);
+            var flags = ParseFlags(filename);
+            var size = new FileInfo(fullPath).Length;
+            var message = new ImapMessage(mime, uid, flags, size);
+            return message;
         }
     }
 }

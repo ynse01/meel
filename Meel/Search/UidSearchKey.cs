@@ -13,7 +13,12 @@ namespace Meel.Search
             uids = SequenceSetParser.Parse(sequence, maxUid);
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Uid;
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             return uids.Contains(message.Uid);
         }

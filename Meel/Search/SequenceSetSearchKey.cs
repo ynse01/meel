@@ -13,9 +13,14 @@ namespace Meel.Search
             list = SequenceSetParser.Parse(sequence, maxId);
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
         {
-            return list.Contains(sequence);
+            return SearchDepth.None;
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
+        {
+            return list.Contains(sequenceId);
         }
     }
 }

@@ -64,10 +64,18 @@ namespace Meel.Stations
             return mailboxes.Keys.Where(name => name.StartsWith(user)).ToList();
         }
 
-        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey) 
+        public List<int> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence) 
         {
             var immb = (InMemoryMailbox)mailbox;
-            return immb.SearchMessages(searchKey);
+            List<int> list;
+            if (useSequence)
+            {
+                list = immb.SearchMessagesBySequence(searchKey);
+            } else
+            {
+                list = immb.SearchMessagesByUid(searchKey);
+            }
+            return list;
         }
 
         public bool RenameMailbox(string user, string oldName, string newName)

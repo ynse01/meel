@@ -12,7 +12,12 @@ namespace Meel.Search
             this.needle = needle.AsString();
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Header;
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             var subject = message.Message.Subject;
             return subject.Contains(needle, StringComparison.OrdinalIgnoreCase);

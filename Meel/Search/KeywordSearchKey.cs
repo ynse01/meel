@@ -14,7 +14,12 @@ namespace Meel.Search
             this.inverted = inverted;
         }
 
-        public bool Matches(ImapMessage message, int sequence)
+        public SearchDepth GetSearchDepth()
+        {
+            return SearchDepth.Flags;
+        }
+
+        public bool Matches(ImapMessage message, int sequenceId)
         {
             bool hasFlag = false;
             switch (keyword)
