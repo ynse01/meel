@@ -25,14 +25,20 @@ namespace Meel.Parsing
 
         public static bool CompareIgnoreCase(byte input, byte expected)
         {
-            bool result;
+            var upper = ToUpper(input);
+            return expected == upper;
+        }
+
+        public static byte ToUpper(byte input)
+        {
+            byte result;
             if (input > 0x60 && input < 0x7b)
             {
-                result = expected == input - 0x20;
+                result = (byte)(input - 0x20);
             }
             else
             {
-                result = expected == input;
+                result = input;
             }
             return result;
         }

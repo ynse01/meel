@@ -1,4 +1,5 @@
 ﻿using MimeKit;
+using System;
 
 namespace Meel
 {
@@ -17,6 +18,8 @@ namespace Meel
         }
 
         public uint Uid { get; private set; }
+
+        public DateTimeOffset InternalDate { get; protected set; }
 
         public long Size { get; private set; }
 

@@ -4,10 +4,10 @@ namespace Meel.Parsing
 {
     public static class LexiConstants
     {
+        // Special characters
         public const byte Space = 0x20;
         public const byte CarrageReturn = 0x0d;
         public const byte NewLine = 0x0a;
-
         public const byte OpenParenthesis = 0x28;
         public const byte CloseParenthesis = 0x29;
         public const byte SquareOpenBrace = 0x5b;
@@ -18,7 +18,10 @@ namespace Meel.Parsing
         public const byte Comma = 0x2c;
         public const byte Colon = 0x3a;
         public const byte Asterisk = 0x2a;
+        public const byte Plus = 0x2b;
+        public const byte Minus = 0x2d;
 
+        // Numbers
         public const byte Number0 = 0x30;
         public const byte Number1 = 0x31;
         public const byte Number2 = 0x32;
@@ -30,6 +33,7 @@ namespace Meel.Parsing
         public const byte Number8 = 0x38;
         public const byte Number9 = 0x39;
         
+        // Letters
         public const byte A = 0x41;
         public const byte B = 0x42;
         public const byte C = 0x43;
@@ -57,6 +61,23 @@ namespace Meel.Parsing
         public const byte Y = 0x59;
         public const byte Z = 0x5a;
 
+        // Months
+        public static readonly byte[] January = new byte[] { J, A, N };
+        public static readonly byte[] February = new byte[] { F, E, B };
+        public static readonly byte[] March = new byte[] { M, A, R };
+        public static readonly byte[] April = new byte[] { A, P, R };
+        public static readonly byte[] May = new byte[] { M, A, Y };
+        public static readonly byte[] June = new byte[] { J, A, N };
+        public static readonly byte[] July = new byte[] { J, U, L };
+        public static readonly byte[] August = new byte[] { A, U, G };
+        public static readonly byte[] September = new byte[] { S, E, P };
+        public static readonly byte[] October = new byte[] { O, C, T };
+        public static readonly byte[] November = new byte[] { N, O, V };
+        public static readonly byte[] December = new byte[] { D, E, C };
+
+        public static readonly byte[] Nil = new byte[] { N, I, L };
+
+        // Commands
         public static readonly byte[] Uid = new byte[] { U, I, D };
         public static readonly byte[] Capability = new byte[] { C, A, P, A, B, I, L, I, T, Y };
         public static readonly byte[] Login = new byte[] { L, O, G, I, N };
@@ -84,6 +105,7 @@ namespace Meel.Parsing
         public static readonly byte[] Subscribe = new byte[] { S, U, B, S, C, R, I, B, E };
         public static readonly byte[] Unsubscribe = new byte[] { U, N, S, U, B, S, C, R, I, B, E };
 
+        // Query paramerers
         public static readonly byte[] All = new byte[] { A, L, L };
         public static readonly byte[] Answered = new byte[] { A, N, S, W, E, R, E, D };
         public static readonly byte[] Bcc = new byte[] { B, C, C };
@@ -118,6 +140,9 @@ namespace Meel.Parsing
         public static readonly byte[] SentSince = new byte[] { S, E, N, T, B, E, F, O, R, E };
         public static readonly byte[] Smaller = new byte[] { S, M, A, L, L, E, R };
         public static readonly byte[] UnDraft = new byte[] { U, N, D, R, A, F, T };
+
+        // Data items
+        public static readonly byte[] BodyStructure = new byte[] { B, O, D, Y, S, T, R, U, C, T, U, R, E };
 
         public static bool IsDigit(byte input)
         {

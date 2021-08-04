@@ -14,6 +14,11 @@ namespace Meel.Parsing
 
         public static string AsString(this ReadOnlySpan<byte> span)
         {
+            var end = span.IndexOf((byte)0);
+            if (end >= 0)
+            {
+                span = span.Slice(0, end);
+            }
             return Encoding.ASCII.GetString(span);
         }
 
@@ -28,6 +33,11 @@ namespace Meel.Parsing
         }
 
         public static Span<byte> AsSpan(this uint number)
+        {
+            return AsAsciiSpan(number.ToString());
+        }
+
+        public static Span<byte> AsSpan(this long number)
         {
             return AsAsciiSpan(number.ToString());
         }

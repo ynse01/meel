@@ -1,4 +1,5 @@
-﻿using Meel.Parsing;
+﻿using Meel.DataItems;
+using Meel.Parsing;
 using Meel.Responses;
 using MimeKit;
 using System;
@@ -27,8 +28,9 @@ namespace Meel.Commands
                 {
                     var mailbox = context.SelectedMailbox;
                     var sequence = requestOptions.Slice(0, index);
-                    var flags = requestOptions.Slice(index + 1).AsString();
                     var sequenceIds = SequenceSetParser.Parse(sequence, (uint)mailbox.NumberOfMessages);
+                    var fetchQuery = requestOptions.Slice(index + 1);
+                    var fetchItem = DataItemsParser.Parse(fetchQuery);
                     if (sequenceIds.Count > 0)
                     {
                         var lineLength = 6 + requestId.Length + completedHint.Length;
@@ -46,7 +48,7 @@ namespace Meel.Commands
                         response.Allocate((messages.Count * lineLength) + messagesLength);
                         foreach (var message in messages)
                         {
-                            PrintMessagePart(response, message, flags);
+                            PrintMessagePart(response, message, fetchItem);
                             response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                         }
                     }
@@ -68,7 +70,7 @@ namespace Meel.Commands
             return 0;
         }
 
-        private void PrintMessagePart(ImapResponse response, ImapMessage message, string parts)
+        private void PrintMessagePart(ImapResponse response, ImapMessage message, DataItem dataItem)
         {
             // TODO: Filter on part. For now return entire message.
             response.AppendLine(Encoding.ASCII.GetBytes(message.Message.ToString()));
