@@ -46,6 +46,20 @@ namespace Meel.Tests
         }
 
         [Test]
+        public void ShouldSelectExitingBoxForUser()
+        {
+            // Arrange
+            var station = new InMemoryStation();
+            var user = "Piet";
+            var box = "Existing";
+            station.CreateMailbox(user, box);
+            // Act
+            var actual = station.SelectMailbox(user, box);
+            // Assert
+            Assert.IsNotNull(actual);
+        }
+
+        [Test]
         public void ShouldNotSelectMailboxFromOtherUser()
         {
             // Arrange

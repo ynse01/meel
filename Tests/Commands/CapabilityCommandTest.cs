@@ -11,7 +11,7 @@ namespace Meel.Tests.Commands
     public class CapabilityCommandTest
     {
         [Test]
-        public void Test()
+        public void ShouldReturnOk()
         {
             // Arrange
             var command = new CapabilityCommand(null);

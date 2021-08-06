@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Text;
 
-namespace Meel.Tests
+namespace Meel.Tests.Commands
 {
     [TestFixture]
     public class CommandParserTest

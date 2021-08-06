@@ -22,7 +22,7 @@ namespace Meel.Stations
         public bool CreateMailbox(string user, string name)
         {
             bool result = false;
-            var boxName = user + ":" + name;
+            var boxName = GetBoxName(user, name);
             if (!mailboxes.ContainsKey(boxName))
             {
                 mailboxes.Add(boxName, new InMemoryMailbox());
