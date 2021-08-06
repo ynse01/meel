@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace Meel.Parsing
 {
@@ -9,10 +8,13 @@ namespace Meel.Parsing
         public static void StreamTo(ref Span<byte> span, Action<Stream> callback)
         {
             int length;
-            using (var stream = new SpanStream(ref span))
+            fixed (byte* ptr = span)
             {
-                callback(stream);
-                length = (int)stream.Position;
+                using (var stream = new SpanStream(ptr, span.Length))
+                {
+                    callback(stream);
+                    length = (int)stream.Position;
+                }
             }
             span = span.Slice(length);
         }
@@ -20,12 +22,6 @@ namespace Meel.Parsing
         private readonly byte* buffer;
         private readonly int length;
         private int position;
-
-        public SpanStream(ref Span<byte> span)
-        {
-            buffer = (byte*)Unsafe.AsPointer(ref span.GetPinnableReference());
-            length = span.Length;
-        }
 
         public SpanStream(byte* pointer, int length)
         {

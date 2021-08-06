@@ -1,6 +1,7 @@
 ﻿using Meel.Parsing;
 using System;
 using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
 using System.Text;
 
@@ -27,7 +28,13 @@ namespace Meel.Responses
 
         public void Allocate(int size)
         {
-            buffer = writer.GetSpan(size);
+            if (writer != null)
+            {
+                buffer = writer.GetSpan(size);
+            } else
+            {
+                buffer = new byte[size];
+            }
         }
 
         public void Allocate(long size)
@@ -168,6 +175,11 @@ namespace Meel.Responses
         {
             sequence.CopyTo(buffer.Slice(offset));
             offset += (int)sequence.Length;
+        }
+
+        public Stream GetStream()
+        {
+            return writer.AsStream(true);
         }
 
         public void SendToPipe()

@@ -5,6 +5,7 @@ using MimeKit;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Meel.Commands
@@ -33,24 +34,19 @@ namespace Meel.Commands
                     var fetchItem = DataItemsParser.Parse(fetchQuery);
                     if (sequenceIds.Count > 0)
                     {
-                        var lineLength = 6 + requestId.Length + completedHint.Length;
-                        var messagesLength = 0L;
-                        var messages = new List<ImapMessage>();
-                        foreach (var sequenceId in sequenceIds)
+                        using (var stream = response.GetStream())
                         {
-                            var message = mailbox.GetMessage(sequenceId);
-                            if (message != null)
+                            foreach (var item in sequenceIds)
                             {
-                                messagesLength += message.Size;
-                                messages.Add(message);
+                                var message = mailbox.GetMessage(item);
+                                if (message != null)
+                                {
+                                    PrintMessagePart(stream, message, fetchItem);
+                                }
                             }
                         }
-                        response.Allocate((messages.Count * lineLength) + messagesLength);
-                        foreach (var message in messages)
-                        {
-                            PrintMessagePart(response, message, fetchItem);
-                            response.AppendLine(requestId, ImapResponse.Ok, completedHint);
-                        }
+                        response.Allocate(6 + requestId.Length + noneHint.Length);
+                        response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                     }
                     else
                     {
@@ -70,10 +66,10 @@ namespace Meel.Commands
             return 0;
         }
 
-        private void PrintMessagePart(ImapResponse response, ImapMessage message, DataItem dataItem)
+        private void PrintMessagePart(Stream stream, ImapMessage message, DataItem dataItem)
         {
             // TODO: Filter on part. For now return entire message.
-            response.AppendLine(Encoding.ASCII.GetBytes(message.Message.ToString()));
+            message.Message.WriteTo(stream);
         }
     }
 }
