@@ -29,12 +29,12 @@ namespace Meel.Commands
                         var completeList = station.ListMailboxes(context.Username, false);
                         if (completeList.Count > 0)
                         {
-                            var linesLength = 13 * completeList.Count;
+                            var linesLength = 0;
                             foreach(var item in completeList)
                             {
-                                linesLength += item.Length;
+                                linesLength += (13 + listHint.Length + item.Length);
                             }
-                            response.Allocate(linesLength + 6 + requestId.Length + completedHint.Length);
+                            response.Allocate((completeList.Count * linesLength) + 6 + requestId.Length + completedHint.Length);
                             // TODO: Handle subscriptions, references and indicate flags
                             foreach (var name in completeList)
                             {
