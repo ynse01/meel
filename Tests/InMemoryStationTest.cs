@@ -76,6 +76,19 @@ namespace Meel.Tests
         }
 
         [Test]
+        public void ShouldNotSelectMailboxWithNoSelectFlag()
+        {
+            // Arrange
+            var station = new InMemoryStation();
+            station.CreateMailbox("Piet", "INBOX");
+            station.CreateMailbox("Piet", "INBOX/NoSelect/Exising");
+            // Act
+            var actual = station.SelectMailbox("Piet", "INBOX/NoSelect");
+            // Assert
+            Assert.IsNull(actual);
+        }
+
+        [Test]
         public void ShouldListAllMailboxForUser()
         {
             // Arrange

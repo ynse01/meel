@@ -1,10 +1,9 @@
-﻿using MimeKit;
-
+﻿
 namespace Meel
 {
     public abstract class Mailbox
     {
-        public Mailbox()
+        protected Mailbox()
         {
             CanWrite = true;
         }
@@ -18,6 +17,8 @@ namespace Meel
         public int FirstUnseenMessage { get; protected set; }
 
         public bool CanWrite { get; protected set; }
+
+        public bool NoSelect { get; protected set; }
 
         public abstract void Select();
 

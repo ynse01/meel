@@ -9,16 +9,17 @@ using System.Text;
 namespace Meel.Tests.Commands
 {
     [TestFixture]
-    public class CreateCommandTest
+    public class DeleteCommandTest
     {
         [Test]
-        public void ShouldCreateBox()
+        public void ShouldDeleteBox()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
-            var command = new CreateCommand(station);
+            station.CreateMailbox(user, box);
+            var command = new DeleteCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
@@ -32,18 +33,17 @@ namespace Meel.Tests.Commands
             Assert.IsNotNull(txt);
             StringAssert.DoesNotContain("BAD", txt);
             StringAssert.Contains("OK", txt);
-            Assert.IsNotNull(station.SelectMailbox(user, box));
+            Assert.IsNull(station.SelectMailbox(user, box));
         }
 
         [Test]
-        public void ShouldNotCreateExistingBox()
+        public void ShouldFailToDeleteNonExistingBox()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
-            var box = "Existing";
-            station.CreateMailbox(user, box);
-            var command = new CreateCommand(station);
+            var box = "NonExisting";
+            var command = new DeleteCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
@@ -61,13 +61,14 @@ namespace Meel.Tests.Commands
         }
 
         [Test]
-        public void ShouldNotCreateBeforeLogin()
+        public void ShouldNotDeleteBeforeLogin()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
-            var command = new CreateCommand(station);
+            station.CreateMailbox(user, box);
+            var command = new DeleteCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.Username = user;
@@ -90,7 +91,8 @@ namespace Meel.Tests.Commands
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
-            var command = new CreateCommand(station);
+            station.CreateMailbox(user, box);
+            var command = new DeleteCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Logout;
@@ -113,7 +115,7 @@ namespace Meel.Tests.Commands
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
-            var command = new CreateCommand(station);
+            var command = new DeleteCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
