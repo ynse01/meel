@@ -18,7 +18,11 @@ namespace Meel.Tests.Commands
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
+            var unsub = "Unsubscribed";
             station.CreateMailbox(user, box);
+            station.SetSubscription(user, box, true);
+            station.CreateMailbox(user, unsub);
+            station.SetSubscription(user, unsub, false);
             var command = new ListCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
@@ -34,6 +38,39 @@ namespace Meel.Tests.Commands
             StringAssert.DoesNotContain("BAD", txt);
             StringAssert.Contains("OK", txt);
             StringAssert.Contains(box, txt);
+            StringAssert.Contains(unsub, txt);
+        }
+
+        [Test]
+        public void ShouldReturnFlags()
+        {
+            // Arrange
+            var station = new InMemoryStation();
+            var user = "Piet";
+            var boxName = "Existing";
+            var otherName = "Another";
+            station.CreateMailbox(user, boxName);
+            var box = (InMemoryMailbox)station.SelectMailbox(user, boxName);
+            box.SetNoSelect(true);
+            station.CreateMailbox(user, otherName);
+            var command = new ListCommand(station);
+            var response = new ImapResponse();
+            var context = new ConnectionContext(42);
+            context.State = SessionState.Authenticated;
+            context.Username = user;
+            var requestId = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("123"));
+            var options = "/ %".AsAsciiSpan();
+            // Act
+            command.Execute(context, requestId, options, ref response);
+            // Assert
+            var txt = response.ToString();
+            Assert.IsNotNull(txt);
+            StringAssert.DoesNotContain("BAD", txt);
+            StringAssert.Contains("OK", txt);
+            var lines = txt.Split("\r\n");
+            StringAssert.Contains(boxName, lines[0]);
+            StringAssert.Contains(otherName, lines[1]);
+            StringAssert.Contains("(/NoSelect)", lines[0]);
         }
 
         [Test]

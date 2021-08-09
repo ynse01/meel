@@ -16,7 +16,7 @@ namespace Meel
 
         public bool SetSubscription(string user, string name, bool desired);
 
-        public List<string> ListMailboxes(string user, bool subscribed);
+        public List<MailboxInfo> ListMailboxes(string user, bool subscribed);
 
         public List<uint> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence);
 

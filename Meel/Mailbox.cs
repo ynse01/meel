@@ -20,6 +20,8 @@ namespace Meel
 
         public bool NoSelect { get; protected set; }
 
+        public bool Subscribed { get; protected set; }
+
         public abstract void Select();
 
         public abstract ImapMessage GetMessage(uint sequenceId);

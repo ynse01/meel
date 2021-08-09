@@ -51,12 +51,12 @@ namespace Meel.Stations
             return uids;
         }
 
-        public List<string> ListMailboxes(string user, bool subscribed)
+        public List<MailboxInfo> ListMailboxes(string user, bool subscribed)
         {
             var inbox = Path.Combine(path, user);
             var list = Directory.GetDirectories(inbox).Select(d => Directory.EnumerateDirectories(d).Last()).ToList();
             list.Add("INBOX");
-            return list;
+            return list.Select(name => new MailboxInfo(name, MailboxFlags.None)).ToList();
         }
 
         public bool RenameMailbox(string user, string oldName, string newName)
@@ -93,5 +93,12 @@ namespace Meel.Stations
             // TODO: Implement
             return false;
         }
+
+        public MailboxFlags? GetMailboxFlags(string user, string name)
+        {
+            // TODO: Implement
+            return null;
+        }
+
     }
 }

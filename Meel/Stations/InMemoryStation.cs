@@ -59,9 +59,12 @@ namespace Meel.Stations
             return immb.Expunge().Select(s => immb.Sequence2Uid(s)).ToList();
         }
 
-        public List<string> ListMailboxes(string user, bool subscribed)
+        public List<MailboxInfo> ListMailboxes(string user, bool subscribed)
         {
-            return mailboxes.Keys.Where(name => name.StartsWith(user)).ToList();
+            return mailboxes
+                .Select(pair => new MailboxInfo(pair.Key, pair.Value.GetFlags()))
+                .Where(info => info.Name.StartsWith(user))
+                .ToList();
         }
 
         public List<uint> SearchMailbox(Mailbox mailbox, ISearchKey searchKey, bool useSequence) 
@@ -105,10 +108,22 @@ namespace Meel.Stations
             var boxName = GetBoxName(user, name);
             if (mailboxes.ContainsKey(boxName))
             {
-                mailboxes[boxName].Subscribed = desired;
+                ((InMemoryMailbox)mailboxes[boxName]).SetSubscribed(desired);
                 result = true;
             }
             return result;
+        }
+
+        public MailboxFlags? GetMailboxFlags(string user, string name)
+        {
+            var mailbox = SelectMailbox(user, name);
+            if (mailbox != null)
+            {
+                return ((InMemoryMailbox)mailbox).GetFlags();
+            } else
+            {
+                return null;
+            }
         }
 
         private string GetBoxName(string user, string name)

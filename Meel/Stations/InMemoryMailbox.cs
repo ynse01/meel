@@ -7,7 +7,7 @@ namespace Meel.Stations
     public class InMemoryMailbox : Mailbox
     {
         private List<ImapMessage> messages = new List<ImapMessage>();
-
+        
         public override void Select()
         {
             // Nothing to do here.
@@ -23,7 +23,10 @@ namespace Meel.Stations
             return (uint)messages.IndexOf(message);
         }
 
-        public bool Subscribed { get; set; }
+        public void SetSubscribed(bool desired)
+        {
+            Subscribed = desired;
+        }
 
         public bool AppendMessage(ImapMessage message)
         {
@@ -72,6 +75,29 @@ namespace Meel.Stations
         public void SetReadonly()
         {
             CanWrite = false;
+        }
+
+        public void SetNoSelect(bool desired)
+        {
+            NoSelect = desired;
+        }
+
+        public MailboxFlags GetFlags()
+        {
+            var flags = MailboxFlags.None;
+            if (Subscribed)
+            {
+                flags |= MailboxFlags.Subscribed;
+            }
+            if (!CanWrite)
+            {
+                flags |= MailboxFlags.ReadOnly;
+            }
+            if (NoSelect)
+            {
+                flags |= MailboxFlags.NoSelect;
+            }
+            return flags;
         }
 
         public uint Sequence2Uid(uint sequenceId)
