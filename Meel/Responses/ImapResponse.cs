@@ -179,17 +179,21 @@ namespace Meel.Responses
 
         public Stream GetStream()
         {
-            return writer.AsStream(true);
+            return writer?.AsStream(true);
         }
 
         public void SendToPipe()
         {
-            writer.Advance(offset);
+            writer?.Advance(offset);
         }
 
+        /// <summary>
+        /// Return the entire contant of this response.
+        /// </summary>
         public override string ToString()
         {
-            return Encoding.ASCII.GetString(buffer);
+            var span = buffer.Slice(0, offset);
+            return Encoding.ASCII.GetString(span);
         }
     }
 }
