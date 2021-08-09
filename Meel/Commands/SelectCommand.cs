@@ -13,10 +13,10 @@ namespace Meel.Commands
         private static readonly byte[] readOnlyHint = Encoding.ASCII.GetBytes("[READ-ONLY]");
         private static readonly byte[] flagsHint = Encoding.ASCII.GetBytes("FLAGS");
         private static readonly byte[] flagsListHint = 
-            Encoding.ASCII.GetBytes(@"\Flagged \Draft \Deleted \Seen \Recent \Answered");
+            Encoding.ASCII.GetBytes(@"\\Flagged \\Draft \\Deleted \\Seen \\Recent \\Answered");
         private static readonly byte[] permFlagsHint = Encoding.ASCII.GetBytes("PERMANENTFLAGS");
         private static readonly byte[] permFlagsListHint =
-            Encoding.ASCII.GetBytes(@"\Flagged \Draft \Deleted \Seen \Answered");
+            Encoding.ASCII.GetBytes(@"\\Flagged \\Draft \\Deleted \\Seen \\Answered");
         private static readonly byte[] existsHint = Encoding.ASCII.GetBytes("EXISTS");
         private static readonly byte[] recentHint = Encoding.ASCII.GetBytes("RECENT");
         private static readonly byte[] unseenHint = Encoding.ASCII.GetBytes("UNSEEN");

@@ -70,7 +70,7 @@ namespace Meel.Tests.Commands
             var lines = txt.Split("\r\n");
             StringAssert.Contains(boxName, lines[0]);
             StringAssert.Contains(otherName, lines[1]);
-            StringAssert.Contains("(/NoSelect)", lines[0]);
+            StringAssert.Contains("(\\NoSelect)", lines[0]);
         }
 
         [Test]

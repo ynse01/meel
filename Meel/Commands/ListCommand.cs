@@ -15,7 +15,7 @@ namespace Meel.Commands
             Encoding.ASCII.GetBytes("Need to specify a mailbox name and a reference");
         private static readonly byte[] authHint =
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
-        private static readonly byte[] noSelectHint = Encoding.ASCII.GetBytes("/NoSelect");
+        private static readonly byte[] noSelectHint = Encoding.ASCII.GetBytes("\\NoSelect");
 
         public ListCommand(IMailStation station) : base(station) { }
 
