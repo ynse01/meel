@@ -21,6 +21,8 @@ namespace Meel.Commands
         private static readonly byte[] recentHint = Encoding.ASCII.GetBytes("RECENT");
         private static readonly byte[] unseenHint = Encoding.ASCII.GetBytes("UNSEEN");
         private static readonly byte[] uidValidityHint = Encoding.ASCII.GetBytes("UIDVALIDITY");
+        private static readonly byte[] missingHint =
+            Encoding.ASCII.GetBytes("No mailbox by that name");
         private static readonly byte[] argsHint =
             Encoding.ASCII.GetBytes("Need to specify a mailbox name");
         private static readonly byte[] authHint =
@@ -32,65 +34,72 @@ namespace Meel.Commands
         {
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected)
             {
-                var name = requestOptions.AsString();
-                var mailbox = station.SelectMailbox(context.Username, name);
-                context.SetSelectedMailbox(mailbox);
-                if (!requestOptions.IsEmpty)
-                {
-                    var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
-                    response.Allocate((6 * lineLength) + requestId.Length + readWriteHint.Length + completedHint.Length);
-                    var numMessages = mailbox.NumberOfMessages.AsSpan();
-                    var numRecent = mailbox.NumberOfMessages.AsSpan();
-                    var firstUnseen = mailbox.FirstUnseenMessage.AsSpan();
-                    var mailboxUid = context.SelectedMailbox.Uid;
-                    // Flags line
-                    response.Append(ImapResponse.Untagged);
-                    response.AppendSpace();
-                    response.Append(flagsHint);
-                    response.AppendSpace();
-                    response.Append(LexiConstants.OpenParenthesis);
-                    response.Append(flagsListHint);
-                    response.Append(LexiConstants.CloseParenthesis);
-                    response.AppendLine();
-                    // Permanent flags line
-                    response.Append(ImapResponse.Untagged);
-                    response.AppendSpace();
-                    response.Append(LexiConstants.SquareOpenBrace);
-                    response.Append(permFlagsHint);
-                    response.AppendSpace();
-                    response.Append(LexiConstants.OpenParenthesis);
-                    response.Append(permFlagsListHint);
-                    response.Append(LexiConstants.CloseParenthesis);
-                    response.Append(LexiConstants.SquareCloseBrace);
-                    response.AppendLine();
-                    // Exists line
-                    response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
-                    // Recent line
-                    response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
-                    // First unseen line
-                    response.Append(ImapResponse.Untagged);
-                    response.AppendSpace();
-                    response.Append(ImapResponse.Ok);
-                    response.AppendSpace();
-                    response.Append(LexiConstants.SquareOpenBrace);
-                    response.Append(unseenHint);
-                    response.AppendSpace();
-                    response.Append(firstUnseen);
-                    response.Append(LexiConstants.SquareCloseBrace);
-                    response.AppendLine();
-                    // UID Validity line
-                    response.Append(ImapResponse.Untagged);
-                    response.AppendSpace();
-                    response.Append(ImapResponse.Ok);
-                    response.AppendSpace();
-                    response.Append(LexiConstants.SquareOpenBrace);
-                    response.Append(uidValidityHint);
-                    response.AppendSpace();
-                    response.Append(mailboxUid.AsSpan());
-                    response.Append(LexiConstants.SquareOpenBrace);
-                    response.AppendLine();
-                    ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
-                    response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
+                if (!requestOptions.IsEmpty) { 
+                    var name = requestOptions.AsString();
+                    var mailbox = station.SelectMailbox(context.Username, name);
+                    if (mailbox != null)
+                    {
+                        context.SetSelectedMailbox(mailbox);
+                        var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
+                        response.Allocate((6 * lineLength) + requestId.Length + readWriteHint.Length + completedHint.Length);
+                        var numMessages = mailbox.NumberOfMessages.AsSpan();
+                        var numRecent = mailbox.NumberOfMessages.AsSpan();
+                        var firstUnseen = mailbox.FirstUnseenMessage.AsSpan();
+                        var mailboxUid = context.SelectedMailbox.Uid;
+                        // Flags line
+                        response.Append(ImapResponse.Untagged);
+                        response.AppendSpace();
+                        response.Append(flagsHint);
+                        response.AppendSpace();
+                        response.Append(LexiConstants.OpenParenthesis);
+                        response.Append(flagsListHint);
+                        response.Append(LexiConstants.CloseParenthesis);
+                        response.AppendLine();
+                        // Permanent flags line
+                        response.Append(ImapResponse.Untagged);
+                        response.AppendSpace();
+                        response.Append(LexiConstants.SquareOpenBrace);
+                        response.Append(permFlagsHint);
+                        response.AppendSpace();
+                        response.Append(LexiConstants.OpenParenthesis);
+                        response.Append(permFlagsListHint);
+                        response.Append(LexiConstants.CloseParenthesis);
+                        response.Append(LexiConstants.SquareCloseBrace);
+                        response.AppendLine();
+                        // Exists line
+                        response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
+                        // Recent line
+                        response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
+                        // First unseen line
+                        response.Append(ImapResponse.Untagged);
+                        response.AppendSpace();
+                        response.Append(ImapResponse.Ok);
+                        response.AppendSpace();
+                        response.Append(LexiConstants.SquareOpenBrace);
+                        response.Append(unseenHint);
+                        response.AppendSpace();
+                        response.Append(firstUnseen);
+                        response.Append(LexiConstants.SquareCloseBrace);
+                        response.AppendLine();
+                        // UID Validity line
+                        response.Append(ImapResponse.Untagged);
+                        response.AppendSpace();
+                        response.Append(ImapResponse.Ok);
+                        response.AppendSpace();
+                        response.Append(LexiConstants.SquareOpenBrace);
+                        response.Append(uidValidityHint);
+                        response.AppendSpace();
+                        response.Append(mailboxUid.AsSpan());
+                        response.Append(LexiConstants.SquareOpenBrace);
+                        response.AppendLine();
+                        ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
+                        response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
+                    } else
+                    {
+                        response.Allocate(6 + requestId.Length + missingHint.Length);
+                        response.AppendLine(requestId, ImapResponse.No, missingHint);
+
+                    }
                 }
                 else
                 {
