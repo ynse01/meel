@@ -1,6 +1,7 @@
 ﻿using Meel.Search;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Meel.Stations
 {
@@ -42,7 +43,16 @@ namespace Meel.Stations
 
         public List<uint> Expunge()
         {
-            return null;
+            var deleted = new List<uint>();
+            for(var i = messages.Count - 1; i >= 0; i--)
+            {
+                if (messages[i].Deleted)
+                {
+                    deleted.Add((uint)i);
+                    messages.RemoveAt(i);
+                }
+            }
+            return deleted;
         }
 
         public List<uint> SearchMessagesBySequence(ISearchKey searchKey)

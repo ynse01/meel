@@ -21,7 +21,7 @@ namespace Meel.Commands
             if (context.State == SessionState.Selected)
             {
                 var deleted = station.ExpungeBySequence(context.SelectedMailbox);
-                if (deleted.Count > 0)
+                if (deleted != null)
                 {
                     var lineLength = 15 + expungeHint.Length;
                     response.Allocate((deleted.Count * lineLength) + 6 + requestId.Length + completedHint.Length);
