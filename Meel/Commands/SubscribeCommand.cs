@@ -23,11 +23,11 @@ namespace Meel.Commands
             if (context.State == SessionState.Authenticated || context.State == SessionState.Selected) {
                 if (!requestOptions.IsEmpty)
                 {
-                    var name = requestOptions.AsString();
-                    var isSubscribed = station.SetSubscription(context.Username, name, true);
+                    var box = requestOptions.AsString();
+                    var isSubscribed = station.SetSubscription(context.Username, box, true);
                     if (isSubscribed)
                     {
-                        response.Allocate(0);
+                        response.Allocate(6 + requestId.Length + completedHint.Length);
                         response.AppendLine(requestId, ImapResponse.Ok, completedHint);
                     } else
                     {
@@ -36,8 +36,8 @@ namespace Meel.Commands
                     }
                 } else
                 {
-                    response.Allocate(6 + requestId.Length + missingHint.Length);
-                    response.AppendLine(requestId, ImapResponse.No, missingHint);
+                    response.Allocate(7 + requestId.Length + missingHint.Length);
+                    response.AppendLine(requestId, ImapResponse.Bad, missingHint);
                 }
             } else
             {
