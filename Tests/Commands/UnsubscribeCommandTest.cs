@@ -9,18 +9,18 @@ using System.Text;
 namespace Meel.Tests.Commands
 {
     [TestFixture]
-    public class SubscribeCommandTest
+    public class UnsubscribeCommandTest
     {
         [Test]
-        public void ShouldSubscribeToExistingBox()
+        public void ShouldUnsubscribeToExistingBox()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var boxName = "Existing";
             station.CreateMailbox(user, boxName);
-            station.SetSubscription(user, boxName, false);
-            var command = new SubscribeCommand(station);
+            station.SetSubscription(user, boxName, true);
+            var command = new UnsubscribeCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
@@ -36,18 +36,18 @@ namespace Meel.Tests.Commands
             StringAssert.DoesNotContain("NO", txt);
             StringAssert.Contains("OK", txt);
             var box = station.SelectMailbox(user, boxName);
-            Assert.IsTrue(box.Subscribed);
+            Assert.IsFalse(box.Subscribed);
         }
 
         [Test]
-        public void ShouldNotSubscribeToNonExistingBox()
+        public void ShouldNotUnsubscribeFromNonExistingBox()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
             station.CreateMailbox(user, box);
-            var command = new SubscribeCommand(station);
+            var command = new UnsubscribeCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
@@ -65,14 +65,14 @@ namespace Meel.Tests.Commands
         }
 
         [Test]
-        public void ShouldNotSubscribeBeforeLogin()
+        public void ShouldNotUnsubscribeBeforeLogin()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
             station.CreateMailbox(user, box);
-            var command = new SubscribeCommand(station);
+            var command = new UnsubscribeCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.Username = user;
@@ -89,14 +89,14 @@ namespace Meel.Tests.Commands
         }
 
         [Test]
-        public void ShouldNotSubscribeAfterLogout()
+        public void ShouldNotUnsubscribeAfterLogout()
         {
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
             var box = "Existing";
             station.CreateMailbox(user, box);
-            var command = new SubscribeCommand(station);
+            var command = new UnsubscribeCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Logout;
@@ -119,7 +119,7 @@ namespace Meel.Tests.Commands
             // Arrange
             var station = new InMemoryStation();
             var user = "Piet";
-            var command = new SubscribeCommand(station);
+            var command = new UnsubscribeCommand(station);
             var response = new ImapResponse();
             var context = new ConnectionContext(42);
             context.State = SessionState.Authenticated;
