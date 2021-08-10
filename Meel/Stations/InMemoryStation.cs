@@ -89,7 +89,7 @@ namespace Meel.Stations
             if (mailboxes.ContainsKey(oldBoxName) && !mailboxes.ContainsKey(newBoxName))
             {
                 mailboxes[newBoxName] = mailboxes[oldBoxName];
-                mailboxes.Remove(oldName);
+                mailboxes.Remove(oldBoxName);
                 result = true;
             }
             return result;
