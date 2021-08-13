@@ -22,7 +22,6 @@ namespace Meel
         public async Task Listen()
         {
             var station = new InMemoryStation();
-            var plane = new LocalRequestResponsePlane(station);
             try
             {
                 server.Start();
@@ -31,7 +30,7 @@ namespace Meel
                     Console.WriteLine("Waiting for a connection...");
                     var client = await server.AcceptTcpClientAsync();
                     Console.WriteLine("Connected!");
-                    var session = new ServerPipe(plane);
+                    var session = new ServerPipe(station);
                     var id = Interlocked.Increment(ref lastId);
                     _ = session.ProcessAsync(client);
                 }

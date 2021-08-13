@@ -20,19 +20,19 @@ namespace Meel
         private static long nextSessionId = 0L;
 
         private Stream stream = null;
-        private IRequestResponsePlane responsePlane;
-        private IIdentifyable sessionId;
+        private ConnectionContext session;
         private PipeWriter writer;
         private int expectLiteralOfSize;
         private ImapCommands literalCommand;
         private ReadOnlySequence<byte> literalRequestId;
+        private CommandFactory factory;
 
-        public ServerSession(IRequestResponsePlane plane, PipeWriter writer)
+        public ServerSession(PipeWriter writer, IMailStation station)
         {
-            responsePlane = plane;
             expectLiteralOfSize = 0;
             this.writer = writer;
-            sessionId = plane.CreateSession(Interlocked.Increment(ref nextSessionId));
+            session = new ConnectionContext(Interlocked.Increment(ref nextSessionId));
+            factory = new CommandFactory(station);
         }
 
         public void Dispose()
@@ -63,6 +63,7 @@ namespace Meel
                 if (reader.TryReadTo(out ReadOnlySequence<byte> requestId, LexiConstants.Space, true))
                 {
                     var command = CommandParser.Parse(reader, out ReadOnlySpan<byte> options);
+                    
                     if (command == ImapCommands.StartTls)
                     {
                         UpgradeToTls(requestId.ToArray());
@@ -86,32 +87,26 @@ namespace Meel
 
         private void HandleLiteral(ReadOnlySequence<byte> data)
         {
-            if (data.Length == expectLiteralOfSize)
-            {
-                if (expectLiteralOfSize == 0)
-                {
-                    ImapResponse response = new ImapResponse(writer);
-                    responsePlane.ReceiveLiteral(literalCommand, sessionId, literalRequestId, data, ref response);
-                    response.SendToPipe();
-                    writer.FlushAsync();
-                }
-            } else
-            {
-                Console.WriteLine("Received too little data for literal");
-            }
+            var literal = data.Slice(0, expectLiteralOfSize);
+            ImapResponse response = new ImapResponse(writer);
+            var command = factory.GetCommand(literalCommand);
+            command.ReceiveLiteral(session, literalRequestId, literal, ref response);
+            response.SendToPipe();
+            writer.FlushAsync();
         }
 
-        private void ExecuteCommand(ImapCommands command, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> options)
+        private void ExecuteCommand(ImapCommands request, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> options)
         {
             var response = new ImapResponse(writer);
-            var literalSize = responsePlane.HandleRequest(command, sessionId, requestId, options, ref response);
+            var command = factory.GetCommand(request);
+            var literalSize = command.Execute(session, requestId, options, ref response);
             Console.WriteLine($"Command {command} returned {response.ToString()}");
             response.SendToPipe();
             writer.FlushAsync();
             if (literalSize > 0)
             {
                 expectLiteralOfSize = literalSize;
-                literalCommand = command;
+                literalCommand = request;
                 literalRequestId = requestId;
             }
         }

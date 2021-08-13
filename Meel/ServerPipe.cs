@@ -10,12 +10,12 @@ namespace Meel
 {
     public class ServerPipe
     {
-        private IRequestResponsePlane plane;
+        private IMailStation station;
         private ServerSession session;
 
-        public ServerPipe(IRequestResponsePlane plane)
+        public ServerPipe(IMailStation station)
         {
-            this.plane = plane;
+            this.station = station;
         }
 
         public async Task ProcessAsync(TcpClient client)
@@ -24,7 +24,7 @@ namespace Meel
             var stream = client.GetStream();
             var reader = PipeReader.Create(stream);
             var writer = PipeWriter.Create(stream);
-            session = new ServerSession(plane, writer);
+            session = new ServerSession(writer, station);
 
             var isComplete = false;
             while(!isComplete)

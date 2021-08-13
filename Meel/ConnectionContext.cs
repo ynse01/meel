@@ -2,7 +2,7 @@
 
 namespace Meel
 {
-    public sealed class ConnectionContext : Metadata, IDisposable, IIdentifyable
+    public sealed class ConnectionContext : Metadata, IDisposable
     {
         public ConnectionContext(long uid)
         {
