@@ -24,6 +24,12 @@ namespace Meel.Stations
             return ((MaildirMailbox)mailbox).AppendMessage(message);
         }
 
+        public bool CopyMessages(IEnumerable<uint> messages, Mailbox source, Mailbox destination)
+        {
+            // TODO: Implement
+            return true;
+        }
+
         public bool CreateMailbox(string user, string name)
         {
             var newPath = Path.Combine(path, user, name);

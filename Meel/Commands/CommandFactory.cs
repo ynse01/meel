@@ -31,11 +31,14 @@ namespace Meel.Commands
                 commands.Add(new LSubCommand(station));
                 commands.Add(new StatusCommand(station));
                 commands.Add(new AppendCommand(station));
-                commands.Add(new NoopCommand(station)); // Check
+                commands.Add(new NoopCommand(station)); // Check is NOOP
                 commands.Add(new CloseCommand(station));
                 commands.Add(new ExpungeCommand(station));
                 commands.Add(new SearchCommand(station));
                 commands.Add(new FetchCommand(station));
+                commands.Add(new StoreCommand(station));
+                commands.Add(new CopyCommand(station));
+                commands.Add(bad); // UID
             }
         }
 

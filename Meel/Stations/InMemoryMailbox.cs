@@ -16,7 +16,12 @@ namespace Meel.Stations
 
         public override ImapMessage GetMessage(uint sequenceId)
         {
-            return messages[(int)sequenceId];
+            ImapMessage result = null;
+            if (sequenceId <= messages.Count)
+            {
+                result = messages[(int)(sequenceId - 1)];
+            }
+            return result;
         }
 
         public override uint GetSequenceNumber(ImapMessage message)

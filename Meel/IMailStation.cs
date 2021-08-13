@@ -22,6 +22,8 @@ namespace Meel
 
         public bool AppendToMailbox(Mailbox mailbox, ImapMessage message);
 
+        public bool CopyMessages(IEnumerable<uint> messages, Mailbox source, Mailbox destination);
+
         public List<uint> ExpungeBySequence(Mailbox mailbox);
 
         public List<uint> ExpungeByUid(Mailbox mailbox);

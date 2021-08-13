@@ -48,6 +48,25 @@ namespace Meel.Stations
             return ((InMemoryMailbox)mailbox).AppendMessage(message);
         }
 
+        public bool CopyMessages(IEnumerable<uint> sequenceSet, Mailbox source, Mailbox destination)
+        {
+            bool result = true;
+            foreach (var sequence in sequenceSet)
+            {
+                var message = ((InMemoryMailbox)source).GetMessage(sequence);
+                if (message != null)
+                {
+                    ((InMemoryMailbox)destination).AppendMessage(message);
+                } else
+                {
+                    // TODO: Rollback previous copied messages.
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        }
+
         public List<uint> ExpungeBySequence(Mailbox mailbox)
         {
             return ((InMemoryMailbox)mailbox).Expunge();
