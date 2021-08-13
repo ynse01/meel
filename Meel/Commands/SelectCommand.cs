@@ -40,58 +40,8 @@ namespace Meel.Commands
                     if (mailbox != null)
                     {
                         context.SetSelectedMailbox(mailbox);
-                        var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
-                        response.Allocate((6 * lineLength) + requestId.Length + readWriteHint.Length + completedHint.Length);
-                        var numMessages = mailbox.NumberOfMessages.AsSpan();
-                        var numRecent = mailbox.NumberOfMessages.AsSpan();
-                        var firstUnseen = mailbox.FirstUnseenMessage.AsSpan();
-                        var mailboxUid = context.SelectedMailbox.Uid;
-                        // Flags line
-                        response.Append(ImapResponse.Untagged);
-                        response.AppendSpace();
-                        response.Append(flagsHint);
-                        response.AppendSpace();
-                        response.Append(LexiConstants.OpenParenthesis);
-                        response.Append(flagsListHint);
-                        response.Append(LexiConstants.CloseParenthesis);
-                        response.AppendLine();
-                        // Permanent flags line
-                        response.Append(ImapResponse.Untagged);
-                        response.AppendSpace();
-                        response.Append(LexiConstants.SquareOpenBrace);
-                        response.Append(permFlagsHint);
-                        response.AppendSpace();
-                        response.Append(LexiConstants.OpenParenthesis);
-                        response.Append(permFlagsListHint);
-                        response.Append(LexiConstants.CloseParenthesis);
-                        response.Append(LexiConstants.SquareCloseBrace);
-                        response.AppendLine();
-                        // Exists line
-                        response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
-                        // Recent line
-                        response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
-                        // First unseen line
-                        response.Append(ImapResponse.Untagged);
-                        response.AppendSpace();
-                        response.Append(ImapResponse.Ok);
-                        response.AppendSpace();
-                        response.Append(LexiConstants.SquareOpenBrace);
-                        response.Append(unseenHint);
-                        response.AppendSpace();
-                        response.Append(firstUnseen);
-                        response.Append(LexiConstants.SquareCloseBrace);
-                        response.AppendLine();
-                        // UID Validity line
-                        response.Append(ImapResponse.Untagged);
-                        response.AppendSpace();
-                        response.Append(ImapResponse.Ok);
-                        response.AppendSpace();
-                        response.Append(LexiConstants.SquareOpenBrace);
-                        response.Append(uidValidityHint);
-                        response.AppendSpace();
-                        response.Append(mailboxUid.AsSpan());
-                        response.Append(LexiConstants.SquareOpenBrace);
-                        response.AppendLine();
+                        var padding = 7 + requestId.Length + readWriteHint.Length + completedHint.Length;
+                        PrepareResponse(ref response, mailbox, padding, true);
                         ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
                         response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
                     } else
@@ -113,6 +63,62 @@ namespace Meel.Commands
                 response.AppendLine(requestId, ImapResponse.Bad, authHint);
             }
             return 0;
+        }
+
+        internal static void PrepareResponse(ref ImapResponse response, Mailbox mailbox, long padding, bool updateState)
+        {
+            var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
+            response.Allocate((6 * lineLength) + padding);
+            var numMessages = mailbox.NumberOfMessages.AsSpan();
+            var numRecent = mailbox.NumberOfMessages.AsSpan();
+            var firstUnseen = mailbox.FirstUnseenMessage.AsSpan();
+            var mailboxUid = mailbox.Uid;
+            // Flags line
+            response.Append(ImapResponse.Untagged);
+            response.AppendSpace();
+            response.Append(flagsHint);
+            response.AppendSpace();
+            response.Append(LexiConstants.OpenParenthesis);
+            response.Append(flagsListHint);
+            response.Append(LexiConstants.CloseParenthesis);
+            response.AppendLine();
+            // Permanent flags line
+            response.Append(ImapResponse.Untagged);
+            response.AppendSpace();
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(permFlagsHint);
+            response.AppendSpace();
+            response.Append(LexiConstants.OpenParenthesis);
+            response.Append(permFlagsListHint);
+            response.Append(LexiConstants.CloseParenthesis);
+            response.Append(LexiConstants.SquareCloseBrace);
+            response.AppendLine();
+            // Exists line
+            response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
+            // Recent line
+            response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
+            // First unseen line
+            response.Append(ImapResponse.Untagged);
+            response.AppendSpace();
+            response.Append(ImapResponse.Ok);
+            response.AppendSpace();
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(unseenHint);
+            response.AppendSpace();
+            response.Append(firstUnseen);
+            response.Append(LexiConstants.SquareCloseBrace);
+            response.AppendLine();
+            // UID Validity line
+            response.Append(ImapResponse.Untagged);
+            response.AppendSpace();
+            response.Append(ImapResponse.Ok);
+            response.AppendSpace();
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(uidValidityHint);
+            response.AppendSpace();
+            response.Append(mailboxUid.AsSpan());
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.AppendLine();
         }
     }
 }

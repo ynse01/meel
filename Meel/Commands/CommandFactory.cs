@@ -21,7 +21,7 @@ namespace Meel.Commands
                 commands.Add(bad); // Authenticate (not implemented)
                 commands.Add(bad); // StartTLS (Handled by ServerSession class)
                 commands.Add(new SelectCommand(station));
-                commands.Add(new SelectCommand(station));  // Examine
+                commands.Add(new ExamineCommand(station));
                 commands.Add(new CreateCommand(station));
                 commands.Add(new DeleteCommand(station));
                 commands.Add(new RenameCommand(station));
