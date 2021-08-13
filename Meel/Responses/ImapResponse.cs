@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Meel.Responses
 {
-    public ref struct ImapResponse
+    public struct ImapResponse
     {
         public static readonly byte[] Ok = Encoding.ASCII.GetBytes("OK");
         public static readonly byte[] No = Encoding.ASCII.GetBytes("NO");
@@ -15,26 +15,22 @@ namespace Meel.Responses
         public static readonly byte[] Bye = Encoding.ASCII.GetBytes("BYE");
         public static readonly byte[] Untagged = Encoding.ASCII.GetBytes("*");
 
-        private PipeWriter writer;
-        private Span<byte> buffer;
+        private Stream stream;
+        private byte[] buffer;
         private int offset;
 
-        public ImapResponse(PipeWriter writer)
+        public ImapResponse(Stream stream)
         {
-            this.writer = writer;
-            buffer = Span<byte>.Empty;
+            this.stream = stream;
+            buffer = null;
             offset = 0;
         }
 
+        public Span<byte> Span => buffer;
+
         public void Allocate(int size)
         {
-            if (writer != null)
-            {
-                buffer = writer.GetSpan(size);
-            } else
-            {
-                buffer = new byte[size];
-            }
+            buffer = new byte[size];
         }
 
         public void Allocate(long size)
@@ -50,7 +46,7 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySpan<byte> span)
         {
-            span.CopyTo(buffer.Slice(offset));
+            span.CopyTo(Span.Slice(offset));
             offset += span.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -58,10 +54,10 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += span1.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -69,13 +65,13 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += span1.Length;
             buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(buffer.Slice(offset));
+            span2.CopyTo(Span.Slice(offset));
             offset += span2.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -83,10 +79,10 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySequence<byte> span1)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += (int)span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += (int)span1.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -94,10 +90,10 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySequence<byte> span1)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += (int)span1.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -106,10 +102,10 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += (int)span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += span1.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -117,13 +113,13 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += (int)span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += span1.Length;
             buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(buffer.Slice(offset));
+            span2.CopyTo(Span.Slice(offset));
             offset += span2.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -131,16 +127,16 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2, ReadOnlySpan<byte> span3)
         {
-            span0.CopyTo(buffer.Slice(offset));
+            span0.CopyTo(Span.Slice(offset));
             offset += (int)span0.Length;
             buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(buffer.Slice(offset));
+            span1.CopyTo(Span.Slice(offset));
             offset += span1.Length;
             buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(buffer.Slice(offset));
+            span2.CopyTo(Span.Slice(offset));
             offset += span2.Length;
             buffer[offset++] = LexiConstants.Space;
-            span3.CopyTo(buffer.Slice(offset));
+            span3.CopyTo(Span.Slice(offset));
             offset += span3.Length;
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
@@ -167,24 +163,25 @@ namespace Meel.Responses
 
         public void Append(ReadOnlySpan<byte> span)
         {
-            span.CopyTo(buffer.Slice(offset));
+            span.CopyTo(Span.Slice(offset));
             offset += span.Length;
         }
 
         public void Append(ReadOnlySequence<byte> sequence)
         {
-            sequence.CopyTo(buffer.Slice(offset));
+            sequence.CopyTo(Span.Slice(offset));
             offset += (int)sequence.Length;
         }
 
         public Stream GetStream()
         {
-            return writer?.AsStream(true);
+            return stream;
         }
 
         public void SendToPipe()
         {
-            writer?.Advance(offset);
+            stream.Write(buffer, 0, offset);
+            stream.Flush();
         }
 
         /// <summary>
@@ -192,7 +189,7 @@ namespace Meel.Responses
         /// </summary>
         public override string ToString()
         {
-            var span = buffer.Slice(0, offset);
+            var span = Span.Slice(0, offset);
             return Encoding.ASCII.GetString(span);
         }
     }

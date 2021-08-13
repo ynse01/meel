@@ -1,9 +1,8 @@
 ﻿using Meel.Parsing;
 using System;
 using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Meel
@@ -18,23 +17,20 @@ namespace Meel
             this.station = station;
         }
 
-        public async Task ProcessAsync(TcpClient client)
+        public async Task ProcessAsync(Stream input, Stream output)
         {
-            Console.WriteLine($"[{client.Client.RemoteEndPoint}]: connected");
-            var stream = client.GetStream();
-            var reader = PipeReader.Create(stream);
-            var writer = PipeWriter.Create(stream);
-            session = new ServerSession(writer, station);
+            var reader = PipeReader.Create(input);
+            session = new ServerSession(output, station);
 
             var isComplete = false;
-            while(!isComplete)
+            while (!isComplete)
             {
                 var result = await reader.ReadAsync();
                 var buffer = result.Buffer;
 
-                while(TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+                while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
                 {
-                    ProcessLine(line);
+                    session.ProcessLine(line);
                 }
 
                 reader.AdvanceTo(buffer.Start, buffer.End);
@@ -43,8 +39,6 @@ namespace Meel
             }
 
             await reader.CompleteAsync();
-
-            Console.WriteLine($"[{client.Client.RemoteEndPoint}]: disconnected");
         }
 
         private bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
@@ -64,26 +58,6 @@ namespace Meel
                 result = false;
             }
             return result;
-        }
-
-        private void ProcessLine(in ReadOnlySequence<byte> line) {
-            session.HandleLine(line);
-        }
-
-        private static string GetStringFromSequence(ReadOnlySequence<byte> buffer)
-        {
-            if (buffer.IsSingleSegment)
-            {
-                return Encoding.ASCII.GetString(buffer.FirstSpan);
-            }
-            return string.Create((int)buffer.Length, buffer, (span, sequence) =>
-            {
-                foreach(var segment in sequence)
-                {
-                    Encoding.ASCII.GetChars(segment.Span, span);
-                    span = span.Slice(segment.Length);
-                }
-            });
         }
     }
 }

@@ -32,8 +32,7 @@ namespace Meel.Tests
             // Arrange
             using (var stream = new MemoryStream())
             {
-                var writer = PipeWriter.Create(stream);
-                var response = new ImapResponse(writer);
+                var response = new ImapResponse(stream);
                 response.Allocate(1000);
                 response.Append("Just a string");
                 response.AppendSpace();
@@ -52,8 +51,7 @@ namespace Meel.Tests
             // Arrange
             using (var stream = new MemoryStream())
             {
-                var writer = PipeWriter.Create(stream);
-                var response = new ImapResponse(writer);
+                var response = new ImapResponse(stream);
                 var input = response.GetStream();
                 var expected = "Just a string and a bow.\r\n";
                 // Act

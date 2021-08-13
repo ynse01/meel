@@ -13,37 +13,31 @@ using System.Threading;
 
 namespace Meel
 {
-    public sealed class ServerSession : IDisposable
+    public sealed class ServerSession
     {
+        private static readonly byte[] Greeting =
+            Encoding.ASCII.GetBytes("* OK Meel server ready for action\r\n");
         private static readonly byte[] StartTlsWarning = 
             Encoding.ASCII.GetBytes(" OK Begin TLS negotiation now\r\n");
         private static long nextSessionId = 0L;
 
-        private Stream stream = null;
         private ConnectionContext session;
-        private PipeWriter writer;
+        private Stream output;
         private int expectLiteralOfSize;
         private ImapCommands literalCommand;
         private ReadOnlySequence<byte> literalRequestId;
         private CommandFactory factory;
 
-        public ServerSession(PipeWriter writer, IMailStation station)
+        public ServerSession(Stream output, IMailStation station)
         {
             expectLiteralOfSize = 0;
-            this.writer = writer;
+            this.output = output;
             session = new ConnectionContext(Interlocked.Increment(ref nextSessionId));
             factory = new CommandFactory(station);
+            SendGreeting();
         }
 
-        public void Dispose()
-        {
-            writer?.Complete();
-            writer = null;
-            stream?.Dispose();
-            stream = null;
-        }
-
-        internal void HandleLine(ReadOnlySequence<byte> line)
+        internal void ProcessLine(ReadOnlySequence<byte> line)
         {
             if (expectLiteralOfSize > 0)
             {
@@ -88,21 +82,18 @@ namespace Meel
         private void HandleLiteral(ReadOnlySequence<byte> data)
         {
             var literal = data.Slice(0, expectLiteralOfSize);
-            ImapResponse response = new ImapResponse(writer);
+            ImapResponse response = new ImapResponse(output);
             var command = factory.GetCommand(literalCommand);
             command.ReceiveLiteral(session, literalRequestId, literal, ref response);
             response.SendToPipe();
-            writer.FlushAsync();
         }
 
         private void ExecuteCommand(ImapCommands request, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> options)
         {
-            var response = new ImapResponse(writer);
+            var response = new ImapResponse(output);
             var command = factory.GetCommand(request);
             var literalSize = command.Execute(session, requestId, options, ref response);
-            Console.WriteLine($"Command {command} returned {response.ToString()}");
             response.SendToPipe();
-            writer.FlushAsync();
             if (literalSize > 0)
             {
                 expectLiteralOfSize = literalSize;
@@ -111,16 +102,23 @@ namespace Meel
             }
         }
 
+        private void SendGreeting()
+        {
+            output.Write(Greeting);
+            output.Flush();
+        }
+
         private void UpgradeToTls(ReadOnlySpan<byte> requestId)
         {
-            stream.Write(requestId);
-            stream.Write(StartTlsWarning, 0, StartTlsWarning.Length);
-            var sslStream = new SslStream(stream);
+            output.Write(requestId);
+            output.Write(StartTlsWarning);
+            output.Flush();
+            var sslStream = new SslStream(output);
             var ecdsa = ECDsa.Create();
             var request = new CertificateRequest("cn=MEEL", ecdsa, HashAlgorithmName.SHA256);
             var certificate = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
             sslStream.AuthenticateAsServer(certificate, false, false);
-            stream = sslStream;
+            output = sslStream;
         }
     }
 }

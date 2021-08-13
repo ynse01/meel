@@ -32,7 +32,8 @@ namespace Meel
                     Console.WriteLine("Connected!");
                     var session = new ServerPipe(station);
                     var id = Interlocked.Increment(ref lastId);
-                    _ = session.ProcessAsync(client);
+                    var stream = client.GetStream();
+                    _ = session.ProcessAsync(stream, stream);
                 }
             }
             catch (SocketException ex)
