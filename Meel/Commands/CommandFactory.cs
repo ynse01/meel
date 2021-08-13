@@ -28,7 +28,7 @@ namespace Meel.Commands
                 commands.Add(new SubscribeCommand(station));
                 commands.Add(new UnsubscribeCommand(station));
                 commands.Add(new ListCommand(station));
-                commands.Add(new ListCommand(station)); // LSub
+                commands.Add(new LSubCommand(station));
                 commands.Add(new StatusCommand(station));
                 commands.Add(new AppendCommand(station));
                 commands.Add(new NoopCommand(station)); // Check
