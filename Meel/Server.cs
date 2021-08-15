@@ -33,7 +33,7 @@ namespace Meel
                     var session = new ServerPipe(station);
                     var id = Interlocked.Increment(ref lastId);
                     var stream = client.GetStream();
-                    _ = session.ProcessAsync(stream, stream);
+                    _ = session.ProcessAsync(stream);
                 }
             }
             catch (SocketException ex)

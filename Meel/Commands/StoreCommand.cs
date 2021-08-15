@@ -31,6 +31,7 @@ namespace Meel.Commands
                         SequenceSetParser.Parse(sequence, (uint)numMessages);
                     if (sequenceIds.Count > 0)
                     {
+                        response.Allocate(6 + requestId.Length + completedHint.Length);
                         foreach (var sequenceId in sequenceIds)
                         {
                             var message = mailbox.GetMessage(sequenceId);
@@ -43,14 +44,17 @@ namespace Meel.Commands
                     }
                     else
                     {
+                        response.Allocate(6 + requestId.Length + noneHint.Length);
                         response.AppendLine(requestId, ImapResponse.No, noneHint);
                     }
                 } else
                 {
+                    response.Allocate(7 + requestId.Length + argsHint.Length);
                     response.AppendLine(requestId, ImapResponse.Bad, argsHint);
                 }
             } else
             {
+                response.Allocate(7 + requestId.Length + modeHint.Length);
                 response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
             return 0;

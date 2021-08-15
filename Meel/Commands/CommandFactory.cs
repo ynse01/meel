@@ -4,12 +4,11 @@ namespace Meel.Commands
 {
     public class CommandFactory
     {
-        private static readonly List<ImapCommand> commands =
-            new List<ImapCommand>();
+        private static List<ImapCommand> commands = new List<ImapCommand>(30);
         
         public CommandFactory(IMailStation station)
         {
-            if (commands == null)
+            if (commands.Count == 0)
             {
                 var bad = new BadCommand(station);
                 // This list needs to be in the same order as the ImapCommands enum.

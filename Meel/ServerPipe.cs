@@ -3,6 +3,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Meel
@@ -17,10 +18,10 @@ namespace Meel
             this.station = station;
         }
 
-        public async Task ProcessAsync(Stream input, Stream output)
+        public async Task ProcessAsync(Stream stream)
         {
-            var reader = PipeReader.Create(input);
-            session = new ServerSession(output, station);
+            var reader = PipeReader.Create(stream);
+            session = new ServerSession(stream, station);
 
             var isComplete = false;
             while (!isComplete)
@@ -28,10 +29,7 @@ namespace Meel
                 var result = await reader.ReadAsync();
                 var buffer = result.Buffer;
 
-                while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
-                {
-                    session.ProcessLine(line);
-                }
+                ProcessBuffer(ref buffer);
 
                 reader.AdvanceTo(buffer.Start, buffer.End);
 
@@ -41,15 +39,36 @@ namespace Meel
             await reader.CompleteAsync();
         }
 
+        public void ProcessAsync(ref ReadOnlySequence<byte> input, Stream output)
+        {
+            session = new ServerSession(output, station);
+            ProcessBuffer(ref input);
+        }
+
+        private void ProcessBuffer(ref ReadOnlySequence<byte> buffer)
+        {
+            while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+            {
+                session.ProcessLine(line);
+            }
+        }
+
         private bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
         {
             bool result;
-            var position = buffer.PositionOf(LexiConstants.NewLine);
+            var position = buffer.PositionOf(LexiConstants.CarrageReturn);
             if (position != null)
             {
                 // Skip the line and the CarrageReturn and EndOfLine characters.
-                line = buffer.Slice(0, buffer.GetPosition(-1, position.Value));
-                buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+                line = buffer.Slice(0, position.Value);
+                var justAfter = buffer.GetPosition(2, position.Value);
+                if ((line.Length + 1) < buffer.Length)
+                {
+                    buffer = buffer.Slice(justAfter);
+                } else
+                {
+                    buffer = ReadOnlySequence<byte>.Empty;
+                }
                 result = true;
             }
             else

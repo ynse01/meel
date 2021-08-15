@@ -8,8 +8,8 @@ namespace Meel.Commands
 {
     public class LoginCommand : ImapCommand
     {
-        private static readonly byte[] acceptHint =
-            Encoding.ASCII.GetBytes("LOGIN accepted");
+        private static readonly byte[] completedHint =
+            Encoding.ASCII.GetBytes("LOGIN completed");
         private static readonly byte[] argsHint =
             Encoding.ASCII.GetBytes("Need to specify username and password");
         private static readonly byte[] invalidHint =
@@ -24,11 +24,16 @@ namespace Meel.Commands
                 var index = requestOptions.IndexOf(LexiConstants.Space);
                 if (index >= 0)
                 {
-                    response.AppendLine(requestId, ImapResponse.Ok, acceptHint);
-                    context.Username = requestOptions.Slice(0, index).AsString();
+                    var username = requestOptions.Slice(0, index).AsString();
+                    var password = requestOptions.Slice(index + 1).AsString();
+                    // TODO: Implement checking credentials
+                    response.Allocate(7 + requestId.Length + completedHint.Length);
+                    response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+                    context.Username = username;
                     context.State = SessionState.Authenticated;
                 } else
                 {
+                    response.Allocate(6 + requestId.Length + invalidHint.Length);
                     response.AppendLine(requestId, ImapResponse.No, invalidHint);
                     context.State = SessionState.NotAuthenticated;
                 }

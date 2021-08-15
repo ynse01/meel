@@ -46,100 +46,73 @@ namespace Meel.Responses
 
         public void AppendLine(ReadOnlySpan<byte> span)
         {
-            span.CopyTo(Span.Slice(offset));
-            offset += span.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += span1.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += span1.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(Span.Slice(offset));
-            offset += span2.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendSpace();
+            Append(span2);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySequence<byte> span1)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += (int)span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += (int)span1.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySpan<byte> span0, ReadOnlySequence<byte> span1)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += (int)span1.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendLine();
         }
 
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += (int)span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += span1.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += (int)span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += span1.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(Span.Slice(offset));
-            offset += span2.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendSpace();
+            Append(span2);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySequence<byte> span0, ReadOnlySpan<byte> span1, ReadOnlySpan<byte> span2, ReadOnlySpan<byte> span3)
         {
-            span0.CopyTo(Span.Slice(offset));
-            offset += (int)span0.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span1.CopyTo(Span.Slice(offset));
-            offset += span1.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span2.CopyTo(Span.Slice(offset));
-            offset += span2.Length;
-            buffer[offset++] = LexiConstants.Space;
-            span3.CopyTo(Span.Slice(offset));
-            offset += span3.Length;
-            buffer[offset++] = LexiConstants.CarrageReturn;
-            buffer[offset++] = LexiConstants.NewLine;
+            Append(span0);
+            AppendSpace();
+            Append(span1);
+            AppendSpace();
+            Append(span2);
+            AppendSpace();
+            Append(span3);
+            AppendLine();
         }
 
         public void AppendSpace()

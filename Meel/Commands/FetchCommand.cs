@@ -55,12 +55,12 @@ namespace Meel.Commands
                     }
                 } else
                 {
-                    response.Allocate(6 + requestId.Length + argsHint.Length);
+                    response.Allocate(7 + requestId.Length + argsHint.Length);
                     response.AppendLine(requestId, ImapResponse.Bad, argsHint);
                 }
             } else
             {
-                response.Allocate(6 + requestId.Length + modeHint.Length);
+                response.Allocate(7 + requestId.Length + modeHint.Length);
                 response.AppendLine(requestId, ImapResponse.Bad, modeHint);
             }
             return 0;
