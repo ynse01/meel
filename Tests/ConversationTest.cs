@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Meel.Tests
 {
@@ -129,11 +128,6 @@ namespace Meel.Tests
                     lines.Add(Encoding.ASCII.GetString(buffer, start, i - start));
                     start = i + 2;
                 }
-            }
-            var end = lines[lines.Count - 1].IndexOf('\0');
-            if (end >= 0)
-            {
-                lines[lines.Count - 1] = lines[lines.Count - 1].Substring(0, end);
             }
             return lines;
         }
