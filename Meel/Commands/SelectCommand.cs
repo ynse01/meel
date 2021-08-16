@@ -27,7 +27,8 @@ namespace Meel.Commands
             Encoding.ASCII.GetBytes("Need to specify a mailbox name");
         private static readonly byte[] authHint =
             Encoding.ASCII.GetBytes("Need to be Authenticated for this command");
-        
+        private const string inbox = "INBOX";
+
         public SelectCommand(IMailStation station) : base(station) { }
 
         public override int Execute(ConnectionContext context, ReadOnlySequence<byte> requestId, ReadOnlySpan<byte> requestOptions, ref ImapResponse response)
@@ -39,16 +40,24 @@ namespace Meel.Commands
                     var mailbox = station.SelectMailbox(context.Username, name);
                     if (mailbox != null)
                     {
-                        context.SetSelectedMailbox(mailbox);
-                        var padding = 7 + requestId.Length + readWriteHint.Length + completedHint.Length;
-                        PrepareResponse(ref response, mailbox, padding, true);
-                        ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
-                        response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
+                        SelectMailboxAndRespond(context, requestId, ref response, mailbox);
+                    } else if (string.Compare(name, inbox, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        // Implicitly create INBOX for this (apparently new) user.
+                        var isCreated = station.CreateMailbox(context.Username, inbox);
+                        if (isCreated)
+                        {
+                            mailbox = station.SelectMailbox(context.Username, inbox);
+                            SelectMailboxAndRespond(context, requestId, ref response, mailbox);
+                        } else
+                        {
+                            response.Allocate(6 + requestId.Length + missingHint.Length);
+                            response.AppendLine(requestId, ImapResponse.No, missingHint);
+                        }
                     } else
                     {
                         response.Allocate(6 + requestId.Length + missingHint.Length);
                         response.AppendLine(requestId, ImapResponse.No, missingHint);
-
                     }
                 }
                 else
@@ -119,6 +128,15 @@ namespace Meel.Commands
             response.Append(mailboxUid.AsSpan());
             response.Append(LexiConstants.SquareOpenBrace);
             response.AppendLine();
+        }
+
+        private void SelectMailboxAndRespond(ConnectionContext context, ReadOnlySequence<byte> requestId, ref ImapResponse response, Mailbox mailbox)
+        {
+            context.SetSelectedMailbox(mailbox);
+            var padding = 7 + requestId.Length + readWriteHint.Length + completedHint.Length;
+            PrepareResponse(ref response, mailbox, padding, true);
+            ReadOnlySpan<byte> code = (mailbox.CanWrite) ? readWriteHint : readOnlyHint;
+            response.AppendLine(requestId, ImapResponse.Ok, code, completedHint);
         }
     }
 }

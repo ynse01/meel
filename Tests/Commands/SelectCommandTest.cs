@@ -38,6 +38,31 @@ namespace Meel.Tests.Commands
         }
 
         [Test]
+        public void ShouldSelectInboxEvenIfNotExistsYet()
+        {
+            // Arrange
+            var station = new InMemoryStation();
+            var user = "Piet";
+            var box = "INBOX";
+            var command = new SelectCommand(station);
+            var response = new ImapResponse();
+            var context = new ConnectionContext(42);
+            context.State = SessionState.Authenticated;
+            context.Username = user;
+            var requestId = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("123"));
+            var options = box.AsAsciiSpan();
+            // Act
+            command.Execute(context, requestId, options, ref response);
+            // Assert
+            var txt = response.ToString();
+            Assert.IsNotNull(txt);
+            StringAssert.DoesNotContain("BAD", txt);
+            StringAssert.DoesNotContain("NO", txt);
+            StringAssert.Contains("OK", txt);
+            Assert.IsNotNull(station.SelectMailbox(user, box));
+        }
+
+        [Test]
         public void ShouldNotSelectNonExistingBox()
         {
             // Arrange
