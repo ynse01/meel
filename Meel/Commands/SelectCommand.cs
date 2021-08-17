@@ -9,18 +9,21 @@ namespace Meel.Commands
     public class SelectCommand : ImapCommand
     {
         private static readonly byte[] completedHint = Encoding.ASCII.GetBytes("SELECT completed");
-        private static readonly byte[] readWriteHint = Encoding.ASCII.GetBytes("[READ-WRTIE]");
+        private static readonly byte[] readWriteHint = Encoding.ASCII.GetBytes("[READ-WRITE]");
         private static readonly byte[] readOnlyHint = Encoding.ASCII.GetBytes("[READ-ONLY]");
         private static readonly byte[] flagsHint = Encoding.ASCII.GetBytes("FLAGS");
         private static readonly byte[] flagsListHint = 
-            Encoding.ASCII.GetBytes(@"\\Flagged \\Draft \\Deleted \\Seen \\Recent \\Answered");
+            Encoding.ASCII.GetBytes(@"\Answered \Flagged \Deleted \Seen \Draft");
         private static readonly byte[] permFlagsHint = Encoding.ASCII.GetBytes("PERMANENTFLAGS");
         private static readonly byte[] permFlagsListHint =
-            Encoding.ASCII.GetBytes(@"\\Flagged \\Draft \\Deleted \\Seen \\Answered");
+            Encoding.ASCII.GetBytes(@"\Answered \Flagged \Deleted \Seen \Draft");
         private static readonly byte[] existsHint = Encoding.ASCII.GetBytes("EXISTS");
         private static readonly byte[] recentHint = Encoding.ASCII.GetBytes("RECENT");
         private static readonly byte[] unseenHint = Encoding.ASCII.GetBytes("UNSEEN");
         private static readonly byte[] uidValidityHint = Encoding.ASCII.GetBytes("UIDVALIDITY");
+        private static readonly byte[] unseenMessageHint1 = Encoding.ASCII.GetBytes("Message");
+        private static readonly byte[] unseenMessageHint2 = Encoding.ASCII.GetBytes("is the first unseen message");
+        private static readonly byte[] uidMessageHint = Encoding.ASCII.GetBytes("Uids valid");
         private static readonly byte[] missingHint =
             Encoding.ASCII.GetBytes("No mailbox by that name");
         private static readonly byte[] argsHint =
@@ -79,9 +82,11 @@ namespace Meel.Commands
             var lineLength = 20 + permFlagsHint.Length + permFlagsListHint.Length;
             response.Allocate((6 * lineLength) + padding);
             var numMessages = mailbox.NumberOfMessages.AsSpan();
-            var numRecent = mailbox.NumberOfMessages.AsSpan();
+            var numRecent = mailbox.NumberOfRecentMessages.AsSpan();
             var firstUnseen = mailbox.FirstUnseenMessage.AsSpan();
             var mailboxUid = mailbox.Uid;
+            // Exists line
+            response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
             // Flags line
             response.Append(ImapResponse.Untagged);
             response.AppendSpace();
@@ -91,19 +96,6 @@ namespace Meel.Commands
             response.Append(flagsListHint);
             response.Append(LexiConstants.CloseParenthesis);
             response.AppendLine();
-            // Permanent flags line
-            response.Append(ImapResponse.Untagged);
-            response.AppendSpace();
-            response.Append(LexiConstants.SquareOpenBrace);
-            response.Append(permFlagsHint);
-            response.AppendSpace();
-            response.Append(LexiConstants.OpenParenthesis);
-            response.Append(permFlagsListHint);
-            response.Append(LexiConstants.CloseParenthesis);
-            response.Append(LexiConstants.SquareCloseBrace);
-            response.AppendLine();
-            // Exists line
-            response.AppendLine(ImapResponse.Untagged, numMessages, existsHint);
             // Recent line
             response.AppendLine(ImapResponse.Untagged, numRecent, recentHint);
             // First unseen line
@@ -116,6 +108,25 @@ namespace Meel.Commands
             response.AppendSpace();
             response.Append(firstUnseen);
             response.Append(LexiConstants.SquareCloseBrace);
+            response.AppendSpace();
+            response.Append(unseenMessageHint1);
+            response.AppendSpace();
+            response.Append(firstUnseen);
+            response.AppendSpace();
+            response.Append(unseenMessageHint2);
+            response.AppendLine();
+            // Permanent flags line
+            response.Append(ImapResponse.Untagged);
+            response.AppendSpace();
+            response.Append(ImapResponse.Ok);
+            response.AppendSpace();
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(permFlagsHint);
+            response.AppendSpace();
+            response.Append(LexiConstants.OpenParenthesis);
+            response.Append(permFlagsListHint);
+            response.Append(LexiConstants.CloseParenthesis);
+            response.Append(LexiConstants.SquareCloseBrace);
             response.AppendLine();
             // UID Validity line
             response.Append(ImapResponse.Untagged);
@@ -126,7 +137,9 @@ namespace Meel.Commands
             response.Append(uidValidityHint);
             response.AppendSpace();
             response.Append(mailboxUid.AsSpan());
-            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(LexiConstants.SquareCloseBrace);
+            response.AppendSpace();
+            response.Append(uidMessageHint);
             response.AppendLine();
         }
 

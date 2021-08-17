@@ -87,6 +87,39 @@ namespace Meel.Tests.Commands
         }
 
         [Test]
+        public void ShouldHaveProperStatistics()
+        {
+            // Arrange
+            var station = new InMemoryStation();
+            var user = "Piet";
+            var boxName = "Existing";
+            station.CreateMailbox(user, boxName);
+            var box = station.SelectMailbox(user, boxName);
+            station.AppendToMailbox(box, new ImapMessage(null, 41, MessageFlags.Seen, 0L));
+            station.AppendToMailbox(box, new ImapMessage(null, 42, MessageFlags.Seen, 0L));
+            station.AppendToMailbox(box, new ImapMessage(null, 43, MessageFlags.Recent, 0L));
+            station.AppendToMailbox(box, new ImapMessage(null, 44, MessageFlags.Recent, 0L));
+            var command = new SelectCommand(station);
+            var response = new ImapResponse();
+            var context = new ConnectionContext(42);
+            context.State = SessionState.Authenticated;
+            context.Username = user;
+            var requestId = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("123"));
+            var options = boxName.AsAsciiSpan();
+            // Act
+            command.Execute(context, requestId, options, ref response);
+            // Assert
+            var txt = response.ToString();
+            Assert.IsNotNull(txt);
+            StringAssert.Contains("* 4 EXISTS", txt);
+            StringAssert.Contains("* 2 RECENT", txt);
+            StringAssert.Contains("* OK [UNSEEN 3]", txt);
+            StringAssert.Contains("* OK [UIDVALIDITY 3857529045]", txt);
+            StringAssert.Contains(@"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)", txt);
+            StringAssert.Contains(@"* OK [PERMANENTFLAGS (\Answered \Flagged \Deleted \Seen \Draft)]", txt);
+        }
+
+        [Test]
         public void ShouldNotSelectBeforeLogin()
         {
             // Arrange

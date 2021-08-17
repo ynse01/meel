@@ -1,14 +1,18 @@
-﻿using Meel.Search;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using Meel.Search;
 
 namespace Meel.Stations
 {
     public class InMemoryMailbox : Mailbox
     {
         private List<ImapMessage> messages = new List<ImapMessage>();
-        
+
+        public InMemoryMailbox()
+        {
+            // TODO: Implement UID Validity
+            Uid = 3857529045;
+        }
+
         public override void Select()
         {
             // Nothing to do here.
@@ -123,8 +127,22 @@ namespace Meel.Stations
         private void UpdateStatistics()
         {
             NumberOfMessages = messages.Count;
-            FirstUnseenMessage = 0;
-            NumberOfRecentMessages = NumberOfMessages;
+            var numRecent = 0;
+            var firstUnseen = -1;
+            for(var i = 0; i < NumberOfMessages; i++)
+            {
+                var message = messages[i];
+                if (message.Recent)
+                {
+                    numRecent++;
+                }
+                if (firstUnseen < 0 && !message.Seen)
+                {
+                    firstUnseen = i + 1;
+                }
+            }
+            FirstUnseenMessage = firstUnseen;
+            NumberOfRecentMessages = numRecent;
         }
     }
 }
