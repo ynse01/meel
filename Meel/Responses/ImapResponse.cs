@@ -21,12 +21,14 @@ namespace Meel.Responses
 
         public ImapResponse(Stream stream)
         {
-            this.stream = stream;
+            this.stream = new KeepOpenStream(stream);
             buffer = null;
             offset = 0;
         }
 
         public Span<byte> Span => buffer;
+
+        public int Length => offset;
 
         public void Allocate(int size)
         {
@@ -42,6 +44,12 @@ namespace Meel.Responses
         {
             buffer[offset++] = LexiConstants.CarrageReturn;
             buffer[offset++] = LexiConstants.NewLine;
+        }
+
+        public void AppendLine(byte value)
+        {
+            Append(value);
+            AppendLine();
         }
 
         public void AppendLine(ReadOnlySpan<byte> span)
@@ -144,6 +152,14 @@ namespace Meel.Responses
         {
             sequence.CopyTo(Span.Slice(offset));
             offset += (int)sequence.Length;
+        }
+
+        /// <summary>
+        /// Move the specified number of bytes backwards.
+        /// </summary>
+        public void Rewind(int offset)
+        {
+            this.offset -= offset;
         }
 
         public Stream GetStream()

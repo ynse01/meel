@@ -1,4 +1,5 @@
 ﻿using Meel.Parsing;
+using Meel.Responses;
 using System;
 
 namespace Meel.DataItems
@@ -14,30 +15,27 @@ namespace Meel.DataItems
     {
         public override ReadOnlySpan<byte> Name => LexiConstants.Body;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
+            response.Append(Name);
+            response.AppendSpace();
 
             // TODO: What are message parameters ?
-            span[0] = LexiConstants.OpenParenthesis;
+            response.Append(LexiConstants.OpenParenthesis);
             var parameters = message.Message.Body.ContentDisposition.Parameters;
             for(var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
-                AppendQuotedString(ref span, parameter.Name);
-                AppendQuotedString(ref span, parameter.Value, (i + 1) != parameters.Count);
+                AppendQuotedString(ref response, parameter.Name);
+                AppendQuotedString(ref response, parameter.Value, (i + 1) != parameters.Count);
             }
-            span[0] = LexiConstants.CloseParenthesis;
-            span[1] = LexiConstants.Space;
-            span = span.Slice(2);
-
-            AppendQuotedString(ref span, message.Message.Body.ContentDisposition.Disposition);
-            AppendQuotedString(ref span, message.Message.Headers[MimeKit.HeaderId.Language]);
-            AppendQuotedString(ref span, message.Message.Body.ContentLocation.ToString(), false);
-            span[0] = LexiConstants.CloseParenthesis;
-            span = span.Slice(1);
+            response.Append(LexiConstants.CloseParenthesis);
+            response.AppendSpace();
+            
+            AppendQuotedString(ref response, message.Message.Body.ContentDisposition.Disposition);
+            AppendQuotedString(ref response, message.Message.Headers[MimeKit.HeaderId.Language]);
+            AppendQuotedString(ref response, message.Message.Body.ContentLocation.ToString(), false);
+            response.Append(LexiConstants.CloseParenthesis);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Meel.Parsing;
+using Meel.Responses;
 using System;
 using System.Text;
 
@@ -10,13 +11,15 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => rfc822Text;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
+            response.Append(Name);
+            response.AppendSpace();
             var body = message.Message.Body;
-            SpanStream.StreamTo(ref span, (stream) => body.WriteTo(stream));
+            using (var stream = response.GetStream())
+            {
+                body.WriteTo(stream);
+            }
         }
     }
 }

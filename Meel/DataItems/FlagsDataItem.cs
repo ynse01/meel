@@ -1,4 +1,5 @@
 ﻿using Meel.Parsing;
+using Meel.Responses;
 using System;
 using System.Text;
 
@@ -16,41 +17,47 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => flags;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
+            response.Append(Name);
+            response.AppendSpace();
+            response.Append(LexiConstants.OpenParenthesis);
+            var before = response.Length;
             if (message.Answered)
             {
-                answered.CopyTo(span);
-                span = span.Slice(answered.Length);
+                response.Append(answered);
+                response.AppendSpace();
             }
             if (message.Deleted)
             {
-                deleted.CopyTo(span);
-                span = span.Slice(deleted.Length);
+                response.Append(deleted);
+                response.AppendSpace();
             }
             if (message.Draft)
             {
-                draft.CopyTo(span);
-                span = span.Slice(draft.Length);
+                response.Append(draft);
+                response.AppendSpace();
             }
             if (message.Flagged)
             {
-                flagged.CopyTo(span);
-                span = span.Slice(flagged.Length);
+                response.Append(flagged);
+                response.AppendSpace();
             }
             if (message.Recent)
             {
-                recent.CopyTo(span);
-                span = span.Slice(recent.Length);
+                response.Append(recent);
+                response.AppendSpace();
             }
             if (message.Seen)
             {
-                seen.CopyTo(span);
-                span = span.Slice(seen.Length);
+                response.Append(seen);
+                response.AppendSpace();
             }
+            if (response.Length != before)
+            {
+                response.Rewind(1);
+            }
+            response.Append(LexiConstants.CloseParenthesis);
         }
     }
 }

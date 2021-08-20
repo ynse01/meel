@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Meel.Parsing;
+using Meel.Responses;
 using MimeKit;
 
 namespace Meel.DataItems
@@ -11,24 +12,22 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => envelope;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
-            span[0] = LexiConstants.OpenParenthesis;
-            span = span.Slice(1);
+            response.Append(Name);
+            response.AppendSpace();
+            response.Append(LexiConstants.OpenParenthesis);
             var headers = message.Message.Headers;
-            AppendQuotedString(ref span, headers[HeaderId.Date]);
-            AppendQuotedString(ref span, headers[HeaderId.Subject]);
-            AppendAddress(ref span, headers[HeaderId.From]);
-            AppendAddress(ref span, headers[HeaderId.Sender]);
-            AppendAddress(ref span, headers[HeaderId.ReplyTo]);
-            AppendAddress(ref span, headers[HeaderId.To]);
-            AppendAddress(ref span, headers[HeaderId.Cc]);
-            AppendAddress(ref span, headers[HeaderId.Bcc]);
-            AppendAddress(ref span, headers[HeaderId.InReplyTo]);
-            AppendQuotedString(ref span, headers[HeaderId.MessageId], true);
+            AppendQuotedString(ref response, headers[HeaderId.Date]);
+            AppendQuotedString(ref response, headers[HeaderId.Subject]);
+            AppendAddress(ref response, headers[HeaderId.From]);
+            AppendAddress(ref response, headers[HeaderId.Sender]);
+            AppendAddress(ref response, headers[HeaderId.ReplyTo]);
+            AppendAddress(ref response, headers[HeaderId.To]);
+            AppendAddress(ref response, headers[HeaderId.Cc]);
+            AppendAddress(ref response, headers[HeaderId.Bcc]);
+            AppendAddress(ref response, headers[HeaderId.InReplyTo]);
+            AppendQuotedString(ref response, headers[HeaderId.MessageId], true);
         }
 
     }

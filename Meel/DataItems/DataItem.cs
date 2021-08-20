@@ -1,4 +1,5 @@
 ﻿using Meel.Parsing;
+using Meel.Responses;
 using MimeKit;
 using System;
 
@@ -8,47 +9,35 @@ namespace Meel.DataItems
     {
         public abstract ReadOnlySpan<byte> Name { get; }
 
-        public abstract void PrintContent(ref Span<byte> span, ImapMessage message);
+        public abstract void PrintContent(ref ImapResponse response, ImapMessage message);
 
-        protected void AppendQuotedString(ref Span<byte> span, string content, bool appendSpace = true)
+        protected void AppendQuotedString(ref ImapResponse response, string content, bool appendSpace = true)
         {
-            AppendQuotedString(ref span, content.AsAsciiSpan(), appendSpace);
+            AppendQuotedString(ref response, content.AsAsciiSpan(), appendSpace);
         }
 
-        protected void AppendQuotedString(ref Span<byte> span, Span<byte> content, bool appendSpace = true)
+        protected void AppendQuotedString(ref ImapResponse response, Span<byte> content, bool appendSpace = true)
         {
-            span[0] = LexiConstants.DoubleQuote;
-            span = span.Slice(1);
-            content.CopyTo(span);
-            var contentLength = content.Length;
-            span[contentLength] = LexiConstants.DoubleQuote;
+            response.Append(LexiConstants.DoubleQuote);
+            response.Append(content);
+            response.Append(LexiConstants.DoubleQuote);
             if (appendSpace)
             {
-                span[contentLength + 1] = LexiConstants.Space;
-                span = span.Slice(contentLength + 2);
-            }
-            else
-            {
-                span = span.Slice(contentLength + 1);
+                response.AppendSpace();
             }
         }
 
-        protected void AppendAddress(ref Span<byte> span, string value)
+        protected void AppendAddress(ref ImapResponse response, string value)
         {
-            var addresses = InternetAddressList.Parse(value);
-            if (addresses.Count == 0)
+            if (!string.IsNullOrEmpty(value)) {
+                var addresses = InternetAddressList.Parse(value);
+                Rfc822Formatter.TryFormat(addresses, ref response);
+                response.AppendSpace();
+            } else
             {
-                LexiConstants.Nil.CopyTo(span);
-                span[3] = LexiConstants.Space;
-                span = span.Slice(4);
-            }
-            else
-            {
-                Rfc822Formatter.TryFormat(addresses, span, out int bytesWritten);
-                span[bytesWritten] = LexiConstants.Space;
-                span = span.Slice(bytesWritten + 1);
+                response.Append(LexiConstants.Nil);
+                response.AppendSpace();
             }
         }
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Meel.Parsing;
+using Meel.Responses;
 using System;
 using System.Text;
 
@@ -10,16 +11,13 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => internalDate;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
-            span[0] = LexiConstants.DoubleQuote;
-            span = span.Slice(1);
-            Rfc822Formatter.TryFormat(message.InternalDate, span, out int bytesWritten);
-            span[bytesWritten] = LexiConstants.DoubleQuote;
-            span = span.Slice(bytesWritten + 1);
+            response.Append(Name);
+            response.AppendSpace();
+            response.Append(LexiConstants.DoubleQuote);
+            Rfc822Formatter.TryFormat(message.InternalDate, ref response);
+            response.Append(LexiConstants.DoubleQuote);
         }
     }
 }

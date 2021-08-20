@@ -28,25 +28,41 @@ namespace Meel.Commands
                 if (index >= 0)
                 {
                     var mailbox = context.SelectedMailbox;
+                    var numMessages = (mailbox != null) ? mailbox.NumberOfMessages : 0;
                     var sequence = requestOptions.Slice(0, index);
-                    var sequenceIds = SequenceSetParser.Parse(sequence, (uint)mailbox.NumberOfMessages);
+                    var sequenceIds = SequenceSetParser.Parse(sequence, (uint)numMessages);
                     var fetchQuery = requestOptions.Slice(index + 1);
                     var fetchItem = DataItemsParser.Parse(fetchQuery);
-                    if (sequenceIds.Count > 0)
+                    if (sequenceIds.Count > 0 && mailbox != null)
                     {
-                        using (var stream = response.GetStream())
+                        // TODO: Calculate required allocation size.
+                        var partsLength = 4096;
+                        response.Allocate(6 + requestId.Length + noneHint.Length + partsLength);
+                        var found = false;
+                        foreach (var item in sequenceIds)
                         {
-                            foreach (var item in sequenceIds)
+                            var message = mailbox.GetMessage(item);
+                            if (message != null)
                             {
-                                var message = mailbox.GetMessage(item);
-                                if (message != null)
-                                {
-                                    PrintMessagePart(stream, message, fetchItem);
-                                }
+                                response.Append(ImapResponse.Untagged);
+                                response.AppendSpace();
+                                response.Append(item.AsSpan());
+                                response.AppendSpace();
+                                response.Append(LexiConstants.Fetch);
+                                response.AppendSpace();
+                                response.Append(LexiConstants.OpenParenthesis);
+                                PrintMessagePart(ref response, message, fetchItem);
+                                response.AppendLine(LexiConstants.CloseParenthesis);
+                                found = true;
                             }
                         }
-                        response.Allocate(6 + requestId.Length + noneHint.Length);
-                        response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+                        if (found)
+                        {
+                            response.AppendLine(requestId, ImapResponse.Ok, completedHint);
+                        } else
+                        {
+                            response.AppendLine(requestId, ImapResponse.No, noneHint);
+                        }
                     }
                     else
                     {
@@ -66,10 +82,10 @@ namespace Meel.Commands
             return 0;
         }
 
-        private void PrintMessagePart(Stream stream, ImapMessage message, DataItem dataItem)
+        private void PrintMessagePart(ref ImapResponse response, ImapMessage message, DataItem dataItem)
         {
             // TODO: Filter on part. For now return entire message.
-            message.Message.WriteTo(stream);
+            dataItem.PrintContent(ref response, message);
         }
     }
 }

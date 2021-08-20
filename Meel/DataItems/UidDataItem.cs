@@ -1,5 +1,6 @@
 ﻿using System;
 using Meel.Parsing;
+using Meel.Responses;
 
 namespace Meel.DataItems
 {
@@ -7,12 +8,11 @@ namespace Meel.DataItems
     {
         public override ReadOnlySpan<byte> Name => LexiConstants.Uid;
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            Name.CopyTo(span);
-            span[Name.Length] = LexiConstants.Space;
-            span = span.Slice(Name.Length + 1);
-            AppendQuotedString(ref span, message.Uid.AsSpan(), true);
+            response.Append(Name);
+            response.AppendSpace();
+            AppendQuotedString(ref response, message.Uid.AsSpan(), true);
         }
     }
 }

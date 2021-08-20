@@ -1,4 +1,4 @@
-﻿using Meel.Parsing;
+﻿using Meel.Responses;
 using System;
 
 namespace Meel.DataItems
@@ -16,19 +16,11 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => new byte[0];
 
-        public override void PrintContent(ref Span<byte> span, ImapMessage message)
+        public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
-            var leftName = left.Name;
-            leftName.CopyTo(span);
-            span[leftName.Length] = LexiConstants.Space;
-            span = span.Slice(leftName.Length + 1);
-            left.PrintContent(ref span, message);
-            span[0] = LexiConstants.Space;
-            var rightName = right.Name;
-            rightName.CopyTo(span);
-            span[rightName.Length] = LexiConstants.Space;
-            span = span.Slice(rightName.Length + 1);
-            right.PrintContent(ref span, message);
+            left.PrintContent(ref response, message);
+            response.AppendSpace();
+            right.PrintContent(ref response, message);
         }
     }
 }

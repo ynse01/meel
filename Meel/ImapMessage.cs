@@ -9,6 +9,7 @@ namespace Meel
         {
             Message = message;
             Uid = uid;
+            Answered = flags.HasFlag(MessageFlags.Answered);
             Seen = flags.HasFlag(MessageFlags.Seen);
             Deleted = flags.HasFlag(MessageFlags.Deleted);
             Flagged = flags.HasFlag(MessageFlags.Flagged);

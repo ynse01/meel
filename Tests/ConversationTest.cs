@@ -108,7 +108,7 @@ namespace Meel.Tests
         {
             var pipe = new ServerPipe(station);
             List<string> response;
-            using (var output = new KeepOpenStream())
+            using (var output = new KeepOpenMemoryStream())
             {
                 var length = 0;
                 foreach (var request in input)
