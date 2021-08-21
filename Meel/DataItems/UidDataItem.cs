@@ -12,7 +12,7 @@ namespace Meel.DataItems
         {
             response.Append(Name);
             response.AppendSpace();
-            AppendQuotedString(ref response, message.Uid.AsSpan(), true);
+            response.Append(message.Uid.AsSpan());
         }
     }
 }
