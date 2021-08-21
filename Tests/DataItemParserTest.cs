@@ -52,6 +52,20 @@ namespace Meel.Tests
             CollectionAssert.AreEquivalent(expected, actual);
         }
 
+        [Test]
+        public void TestMultiple()
+        {
+            // Arrange
+            var query = "(FLAGS RFC822.SIZE ENVELOPE)".AsAsciiSpan();
+            var expected = new string[] { "FLAGS", "RFC822.SIZE", "ENVELOPE" };
+            // Act
+            var item = DataItemParser.Parse(query);
+            // Assert
+            var actual = new List<string>();
+            GetItemNames(actual, item);
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
+
         private void GetItemNames(List<string> names, DataItem item)
         {
             if (item is AggregatedDataItem)

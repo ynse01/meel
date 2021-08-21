@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Meel.DataItems;
 
 namespace Meel.Parsing
@@ -9,7 +10,11 @@ namespace Meel.Parsing
         {
             DataItem result = null;
             var byte0 = AsciiComparer.ToUpper(span[0]);
-            if (byte0 == LexiConstants.A)
+            if (byte0 == LexiConstants.OpenParenthesis)
+            {
+                result = ParseList(span);
+            }
+            else if (byte0 == LexiConstants.A)
             {
                 // Can be ALL
                 result = MacroAll();
@@ -91,6 +96,35 @@ namespace Meel.Parsing
                 result = new UidDataItem();
             }
             return result;
+        }
+
+        private static DataItem ParseList(ReadOnlySpan<byte> span)
+        {
+            span = span.Slice(1);
+            var list = new List<DataItem>();
+            var index = span.IndexOfAny(LexiConstants.Space, LexiConstants.CloseParenthesis);
+            while (index >= 0)
+            {
+                list.Add(Parse(span.Slice(0, index)));
+                span = span.Slice(index + 1);
+                index = span.IndexOfAny(LexiConstants.Space, LexiConstants.CloseParenthesis);
+            }
+            if (list.Count == 1)
+            {
+                return list[0];
+            }
+            else if (list.Count == 2)
+            {
+                return new AggregatedDataItem(list[0], list[1]);
+            } else
+            {
+                var result = new AggregatedDataItem(list[0], list[1]);
+                for (var i = 2; i < list.Count; i++)
+                {
+                    result = new AggregatedDataItem(result, list[i]);
+                }
+                return result;
+            }
         }
 
         private static DataItem MacroAll()
