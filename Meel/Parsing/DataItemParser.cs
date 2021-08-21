@@ -3,19 +3,19 @@ using Meel.DataItems;
 
 namespace Meel.Parsing
 {
-    public static class DataItemsParser
+    public static class DataItemParser
     {
         public static DataItem Parse(ReadOnlySpan<byte> span)
         {
             DataItem result = null;
             var byte0 = AsciiComparer.ToUpper(span[0]);
-            if (byte0 == LexiConstants.B)
+            if (byte0 == LexiConstants.A)
             {
                 // Can be ALL
                 result = MacroAll();
             } else if (byte0 == LexiConstants.B)
             {
-                // Can be BODY, BODY[...] or BODYSTRUCTURE
+                // Can be BODY, BODY[...], BODY.PEEK[...] or BODYSTRUCTURE
                 var byte4 = AsciiComparer.ToUpper(span[4]);
                 if (byte4 == LexiConstants.Space)
                 {
@@ -27,7 +27,13 @@ namespace Meel.Parsing
                 }
                 else if (byte4 == LexiConstants.SquareOpenBrace)
                 {
-                    result = new BodySectionDataItem();
+                    var section = ParseSection(span.Slice(4));
+                    result = new BodySectionDataItem(section);
+                }
+                else if (byte4 == LexiConstants.Period)
+                {
+                    var section = ParseSection(span.Slice(8));
+                    result = new BodyPeekDataItem(section);
                 }
             }
             else if (byte0 == LexiConstants.E)
@@ -51,7 +57,6 @@ namespace Meel.Parsing
                 {
                     result = new FlagsDataItem();
                 }
-                result = new FlagsDataItem();
             }
             else if (byte0 == LexiConstants.I)
             {
@@ -108,6 +113,49 @@ namespace Meel.Parsing
             var middle = new AggregatedDataItem(new Rfc822SizeDataItem(), new EnvelopeDataItem());
             var right = new AggregatedDataItem(middle, new BodyDataItem());
             return new AggregatedDataItem(left, right);
+        }
+
+        private static BodySection ParseSection(ReadOnlySpan<byte> span)
+        {
+            var section = new BodySection();
+            var index = span.IndexOf(LexiConstants.Period);
+            while(index != -1) {
+                var num = span.AsNumber();
+                section.AddPart(num);
+                span = span.Slice(index);
+                index = span.IndexOf(LexiConstants.Period) + 1;
+            }
+            var byte0 = AsciiComparer.ToUpper(span[0]);
+            if (byte0 == LexiConstants.H)
+            {
+                // Can be HEADER, HEADER.FIELDS or HEADER.FIELDS.NOT
+                var byte6 = span[6];
+                if (byte6 == LexiConstants.Period)
+                {
+                    var byte13 = span[13];
+                    if (byte13 == LexiConstants.Period)
+                    {
+                        section.Subset = BodySubset.HeaderFieldsNot;
+                    }
+                    else
+                    {
+                        section.Subset = BodySubset.HeaderFields;
+                    }
+                } 
+                else
+                {
+                    section.Subset = BodySubset.Header;
+                }
+            }
+            else if (byte0 == LexiConstants.M)
+            {
+                section.Subset = BodySubset.Mime;
+            }
+            else if (byte0 == LexiConstants.T)
+            {
+                section.Subset = BodySubset.Text;
+            }
+            return null;
         }
     }
 }

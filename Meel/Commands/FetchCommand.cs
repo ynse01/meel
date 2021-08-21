@@ -32,7 +32,7 @@ namespace Meel.Commands
                     var sequence = requestOptions.Slice(0, index);
                     var sequenceIds = SequenceSetParser.Parse(sequence, (uint)numMessages);
                     var fetchQuery = requestOptions.Slice(index + 1);
-                    var fetchItem = DataItemsParser.Parse(fetchQuery);
+                    var fetchItem = DataItemParser.Parse(fetchQuery);
                     if (sequenceIds.Count > 0 && mailbox != null)
                     {
                         // TODO: Calculate required allocation size.

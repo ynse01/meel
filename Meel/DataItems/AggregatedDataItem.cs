@@ -16,6 +16,10 @@ namespace Meel.DataItems
 
         public override ReadOnlySpan<byte> Name => new byte[0];
 
+        public DataItem Left => left;
+
+        public DataItem Right => right;
+
         public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
             left.PrintContent(ref response, message);

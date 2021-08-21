@@ -20,6 +20,7 @@ namespace Meel.Parsing
         public const byte Asterisk = 0x2a;
         public const byte Plus = 0x2b;
         public const byte Minus = 0x2d;
+        public const byte Period = 0x2e;
 
         // Numbers
         public const byte Number0 = 0x30;
@@ -143,6 +144,7 @@ namespace Meel.Parsing
 
         // Data items
         public static readonly byte[] BodyStructure = new byte[] { B, O, D, Y, S, T, R, U, C, T, U, R, E };
+        public static readonly byte[] BodyPeek = new byte[] { B, O, D, Y, Period, P, E, E, K };
 
         public static bool IsDigit(byte input)
         {

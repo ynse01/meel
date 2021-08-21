@@ -4,16 +4,17 @@ using System;
 
 namespace Meel.DataItems
 {
-    public class BodySectionDataItem : DataItem
+    public class BodyPeekDataItem : DataItem
     {
         private BodySection section;
 
-        public BodySectionDataItem(BodySection section)
+        public BodyPeekDataItem(BodySection section)
         {
             this.section = section;
         }
 
-        public override ReadOnlySpan<byte> Name => LexiConstants.Body;
+
+        public override ReadOnlySpan<byte> Name => LexiConstants.BodyPeek;
 
         public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
