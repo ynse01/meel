@@ -47,6 +47,10 @@ namespace Meel.Responses
         private static void FormatFields(MimeEntity part, ref ImapResponse response) { }
         private static void FormatFieldsNot(MimeEntity part, ref ImapResponse response) { }
         private static void FormatMime(MimeEntity part, ref ImapResponse response) { }
-        private static void FormatText(MimeEntity part, ref ImapResponse response) { }
+        private static void FormatText(MimeEntity part, ref ImapResponse response) 
+        {
+            var textPart = part as TextPart;
+            response.Append(textPart.Text);
+        }
     }
 }

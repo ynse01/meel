@@ -145,6 +145,10 @@ namespace Meel.Parsing
         // Data items
         public static readonly byte[] BodyStructure = new byte[] { B, O, D, Y, S, T, R, U, C, T, U, R, E };
         public static readonly byte[] BodyPeek = new byte[] { B, O, D, Y, Period, P, E, E, K };
+        public static readonly byte[] Mime = new byte[] { M, I, M, E };
+        public static readonly byte[] HeaderFields = new byte[] { H, E, A, D, E, R, Period, F, I, E, L, D, S };
+        public static readonly byte[] HeaderFieldsNot = 
+            new byte[] { H, E, A, D, E, R, Period, F, I, E, L, D, S, Period, N, O, T };
 
         public static bool IsDigit(byte input)
         {

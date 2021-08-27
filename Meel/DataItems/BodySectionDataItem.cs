@@ -18,9 +18,14 @@ namespace Meel.DataItems
         public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
             response.Append(Name);
+            response.Append(LexiConstants.SquareOpenBrace);
+            response.Append(section.ToArray());
+            response.Append(LexiConstants.SquareCloseBrace);
             response.AppendSpace();
 
+            response.Append(LexiConstants.OpenParenthesis);
             BodySectionFormatter.FormatBodySection(message, ref response, section);
+            response.Append(LexiConstants.CloseParenthesis);
         }
     }
 }

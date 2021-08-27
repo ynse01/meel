@@ -15,7 +15,7 @@ namespace Meel.Responses
         public static readonly byte[] Bye = Encoding.ASCII.GetBytes("BYE");
         public static readonly byte[] Untagged = Encoding.ASCII.GetBytes("*");
 
-        private Stream stream;
+        private KeepOpenStream stream;
         private byte[] buffer;
         private int offset;
 
@@ -136,10 +136,7 @@ namespace Meel.Responses
         public void Append(string str)
         {
             var temp = Encoding.ASCII.GetBytes(str);
-            for(var i = 0; i < temp.Length; i++)
-            {
-                buffer[offset++] = temp[i];
-            }
+            Append(temp);
         }
 
         public void Append(ReadOnlySpan<byte> span)
@@ -178,8 +175,15 @@ namespace Meel.Responses
         /// </summary>
         public override string ToString()
         {
-            var span = Span.Slice(0, offset);
-            return Encoding.ASCII.GetString(span);
+            var inner = stream?.GetInnerStream() as BuffersStream;
+            if (inner != null)
+            {
+                return inner.ToString();
+            } else
+            {
+                var span = Span.Slice(0, offset);
+                return Encoding.ASCII.GetString(span);
+            }
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace Meel.Responses
 {
@@ -47,6 +44,11 @@ namespace Meel.Responses
         public override void Write(byte[] buffer, int offset, int count)
         {
             inner.Write(buffer, offset, count);
+        }
+
+        public Stream GetInnerStream()
+        {
+            return inner;
         }
     }
 }

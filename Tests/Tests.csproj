@@ -12,10 +12,12 @@
 
   <ItemGroup>
     <None Remove="DataItems\ComplexMessage.txt" />
+    <None Remove="DataItems\SimpleMessage.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="DataItems\ComplexMessage.txt" />
+    <EmbeddedResource Include="DataItems\SimpleMessage.txt" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,18 @@
+FCC: imap://ynse@meel.io/Sent
+X-Identity-Key: id4
+X-Account-Key: account4
+To: ynse@meel.io
+From: Meel <ynse@meel.io>
+Subject: Test 1
+Message-ID: <3f2a4a19-7c2f-3196-e847-30a1b3882e1b@meel.io>
+Date: Sat, 14 Aug 2021 14:31:35 +0200
+X-Mozilla-Draft-Info: internal/draft; vcard=0; receipt=0; DSN=0; uuencode=0;
+ attachmentreminder=0; deliveryformat=4
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: nl
+
+Some simple text
