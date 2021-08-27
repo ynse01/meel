@@ -13,7 +13,13 @@ namespace Meel.DataItems
 
         protected void AppendQuotedString(ref ImapResponse response, string content, bool appendSpace = true)
         {
-            AppendQuotedString(ref response, content.AsAsciiSpan(), appendSpace);
+            if (content != null)
+            {
+                AppendQuotedString(ref response, content.AsAsciiSpan(), appendSpace);
+            } else
+            {
+                response.Append(LexiConstants.Nil);
+            }
         }
 
         protected void AppendQuotedString(ref ImapResponse response, Span<byte> content, bool appendSpace = true)

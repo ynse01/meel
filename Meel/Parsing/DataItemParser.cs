@@ -32,7 +32,7 @@ namespace Meel.Parsing
                 }
                 else if (byte4 == LexiConstants.SquareOpenBrace)
                 {
-                    var section = ParseSection(span.Slice(4));
+                    var section = ParseSection(span.Slice(5));
                     result = new BodySectionDataItem(section);
                 }
                 else if (byte4 == LexiConstants.Period)
@@ -152,14 +152,23 @@ namespace Meel.Parsing
         private static BodySection ParseSection(ReadOnlySpan<byte> span)
         {
             var section = new BodySection();
-            var index = span.IndexOf(LexiConstants.Period);
-            while(index != -1) {
-                var num = span.AsNumber();
-                section.AddPart(num);
-                span = span.Slice(index);
-                index = span.IndexOf(LexiConstants.Period) + 1;
+            if (span[0] == LexiConstants.SquareOpenBrace)
+            {
+                span = span.Slice(1);
             }
             var byte0 = AsciiComparer.ToUpper(span[0]);
+            if (byte0 != LexiConstants.H)
+            {
+                var index = span.IndexOf(LexiConstants.Period);
+                while (index != -1)
+                {
+                    var num = span.AsNumber();
+                    section.AddPart(num);
+                    span = span.Slice(index + 1);
+                    index = span.IndexOf(LexiConstants.Period);
+                }
+            }
+            byte0 = AsciiComparer.ToUpper(span[0]);
             if (byte0 == LexiConstants.H)
             {
                 // Can be HEADER, HEADER.FIELDS or HEADER.FIELDS.NOT
@@ -189,7 +198,7 @@ namespace Meel.Parsing
             {
                 section.Subset = BodySubset.Text;
             }
-            return null;
+            return section;
         }
     }
 }

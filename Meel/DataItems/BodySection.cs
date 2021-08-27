@@ -39,7 +39,7 @@ namespace Meel.DataItems
             byte[] result;
             var subset = SubsetToArray();
             var part = PartsToArray();
-            if (subset.Length > 0)
+            if (part.Length > 0)
             {
                 var partLength = part.Length;
                 result = new byte[subset.Length + partLength + 1];
@@ -48,7 +48,7 @@ namespace Meel.DataItems
                 Array.Copy(subset, 0, result, partLength + 1, subset.Length);
             } else
             {
-                result = part;
+                result = subset;
             }
             return result;
         }
@@ -83,9 +83,22 @@ namespace Meel.DataItems
 
         private byte[] PartsToArray()
         {
-            // TODO: Support more parts
-            byte[] arr = new byte[1];
-            arr[0] = parts[0].AsSpan()[0];
+            byte[] arr;
+            if (partIndex > 0)
+            {
+                arr = new byte[(partIndex * 2) - 1];
+                for (var i = 0; i < partIndex; i++)
+                {
+                    arr[2 * i] = parts[i].AsSpan()[0];
+                    if (((2 * i) + 1) < arr.Length)
+                    {
+                        arr[(2 * i) + 1] = LexiConstants.Period;
+                    }
+                }
+            } else
+            {
+                arr = new byte[0];
+            }
             return arr;
         }
     }

@@ -13,14 +13,23 @@ namespace Meel.DataItems
             this.section = section;
         }
 
-        public override ReadOnlySpan<byte> Name => LexiConstants.Body;
+        public override ReadOnlySpan<byte> Name
+        {
+            get
+            {
+                var inner = section.ToArray();
+                var result = new byte[6 + inner.Length];
+                Array.Copy(LexiConstants.Body, result, 4);
+                result[4] = LexiConstants.SquareOpenBrace;
+                Array.Copy(inner, 0, result, 5, inner.Length);
+                result[inner.Length + 5] = LexiConstants.SquareCloseBrace;
+                return result;
+            }
+        }
 
         public override void PrintContent(ref ImapResponse response, ImapMessage message)
         {
             response.Append(Name);
-            response.Append(LexiConstants.SquareOpenBrace);
-            response.Append(section.ToArray());
-            response.Append(LexiConstants.SquareCloseBrace);
             response.AppendSpace();
 
             response.Append(LexiConstants.OpenParenthesis);

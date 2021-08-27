@@ -53,6 +53,26 @@ namespace Meel.Tests
         }
 
         [Test]
+        [TestCase("HEADER")]
+        [TestCase("TEXT")]
+        [TestCase("HEADER.FIELDS")]
+        [TestCase("HEADER.FIELDS.NOT")]
+        [TestCase("1.TEXT")]
+        [TestCase("2.3.MIME")]
+        public void TestBodySections(string section)
+        {
+            // Arrange
+            var query = $"BODY[{section}]".AsAsciiSpan();
+            var expected = new string[] { $"BODY[{section}]" };
+            // Act
+            var item = DataItemParser.Parse(query);
+            // Assert
+            var actual = new List<string>();
+            GetItemNames(actual, item);
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
+
+        [Test]
         public void TestMultiple()
         {
             // Arrange

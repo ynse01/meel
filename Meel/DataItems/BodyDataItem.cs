@@ -22,19 +22,40 @@ namespace Meel.DataItems
 
             // TODO: What are message parameters ?
             response.Append(LexiConstants.OpenParenthesis);
-            var parameters = message.Message.Body.ContentDisposition.Parameters;
-            for(var i = 0; i < parameters.Count; i++)
+            var disposition = message.Message.Body?.ContentDisposition;
+            if (disposition != null)
             {
-                var parameter = parameters[i];
-                AppendQuotedString(ref response, parameter.Name);
-                AppendQuotedString(ref response, parameter.Value, (i + 1) != parameters.Count);
+                var parameters = disposition.Parameters;
+                for (var i = 0; i < parameters.Count; i++)
+                {
+                    var parameter = parameters[i];
+                    AppendQuotedString(ref response, parameter.Name);
+                    AppendQuotedString(ref response, parameter.Value, (i + 1) != parameters.Count);
+                }
+            }
+            else
+            {
+                response.Append(LexiConstants.Nil);
             }
             response.Append(LexiConstants.CloseParenthesis);
             response.AppendSpace();
-            
-            AppendQuotedString(ref response, message.Message.Body.ContentDisposition.Disposition);
+
+            if (disposition != null)
+            {
+                AppendQuotedString(ref response, disposition.Disposition);
+            } else
+            {
+                response.Append(LexiConstants.Nil);
+            }
             AppendQuotedString(ref response, message.Message.Headers[MimeKit.HeaderId.Language]);
-            AppendQuotedString(ref response, message.Message.Body.ContentLocation.ToString(), false);
+            var location = message.Message.Body?.ContentLocation;
+            if (location != null)
+            {
+                AppendQuotedString(ref response, location.ToString(), false);
+            } else
+            {
+                response.Append(LexiConstants.Nil);
+            }
             response.Append(LexiConstants.CloseParenthesis);
         }
     }
