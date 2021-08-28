@@ -20,7 +20,7 @@ namespace Meel
 
         public uint Uid { get; private set; }
 
-        public DateTimeOffset InternalDate { get; protected set; }
+        public DateTimeOffset InternalDate { get; set; }
 
         public long Size { get; private set; }
 

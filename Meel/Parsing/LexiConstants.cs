@@ -62,20 +62,6 @@ namespace Meel.Parsing
         public const byte Y = 0x59;
         public const byte Z = 0x5a;
 
-        // Months
-        public static readonly byte[] January = new byte[] { J, A, N };
-        public static readonly byte[] February = new byte[] { F, E, B };
-        public static readonly byte[] March = new byte[] { M, A, R };
-        public static readonly byte[] April = new byte[] { A, P, R };
-        public static readonly byte[] May = new byte[] { M, A, Y };
-        public static readonly byte[] June = new byte[] { J, A, N };
-        public static readonly byte[] July = new byte[] { J, U, L };
-        public static readonly byte[] August = new byte[] { A, U, G };
-        public static readonly byte[] September = new byte[] { S, E, P };
-        public static readonly byte[] October = new byte[] { O, C, T };
-        public static readonly byte[] November = new byte[] { N, O, V };
-        public static readonly byte[] December = new byte[] { D, E, C };
-
         public static readonly byte[] Nil = new byte[] { N, I, L };
 
         // Commands

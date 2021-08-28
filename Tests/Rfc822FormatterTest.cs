@@ -23,7 +23,6 @@ namespace Meel.Tests
             var actual = response.ToString();
             Assert.IsTrue(result);
             StringAssert.AreEqualIgnoringCase(expected, actual);
-            Assert.AreEqual(26, response.Length);
         }
 
         [Test]
@@ -40,7 +39,25 @@ namespace Meel.Tests
             var actual = response.ToString();
             Assert.IsTrue(result);
             StringAssert.AreEqualIgnoringCase(expected, actual);
-            Assert.AreEqual(30, response.Length);
+        }
+
+        [Test]
+        public void TestAddressListFormatting()
+        {
+            // Arrange
+            var addresses = new InternetAddressList(new[] {
+                new MailboxAddress((string)null, "minutes@CNRI.Reston.VA.US"),
+                new MailboxAddress("John Klensin", "KLENSIN@MIT.EDU")
+            });
+            var response = new ImapResponse();
+            response.Allocate(100);
+            var expected = "((NIL NIL \"minutes\" \"CNRI.Reston.VA.US\") (\"John Klensin\" NIL \"KLENSIN\" \"MIT.EDU\"))";
+            // Act
+            var result = Rfc822Formatter.TryFormat(addresses, ref response);
+            // Assert
+            var actual = response.ToString();
+            Assert.IsTrue(result);
+            StringAssert.AreEqualIgnoringCase(expected, actual);
         }
     }
 }

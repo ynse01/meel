@@ -1,11 +1,26 @@
 ﻿using Meel.Responses;
 using MimeKit;
 using System;
+using System.Text;
 
 namespace Meel.Parsing
 {
     public static class Rfc822Formatter
     {
+        // Months
+        private static readonly byte[] January = Encoding.ASCII.GetBytes("Jan");
+        private static readonly byte[] February = Encoding.ASCII.GetBytes("Feb");
+        private static readonly byte[] March = Encoding.ASCII.GetBytes("Mar");
+        private static readonly byte[] April = Encoding.ASCII.GetBytes("Apr");
+        private static readonly byte[] May = Encoding.ASCII.GetBytes("May");
+        private static readonly byte[] June = Encoding.ASCII.GetBytes("Jun");
+        private static readonly byte[] July = Encoding.ASCII.GetBytes("Jul");
+        private static readonly byte[] August = Encoding.ASCII.GetBytes("Aug");
+        private static readonly byte[] September = Encoding.ASCII.GetBytes("Sep");
+        private static readonly byte[] October = Encoding.ASCII.GetBytes("Oct");
+        private static readonly byte[] November = Encoding.ASCII.GetBytes("Nov");
+        private static readonly byte[] December = Encoding.ASCII.GetBytes("Dec");
+
         public static bool TryFormat(DateTimeOffset dateTimeOffset, ref ImapResponse response)
         {
             var day = dateTimeOffset.Day.AsSpan();
@@ -96,14 +111,20 @@ namespace Meel.Parsing
 
         public static bool TryFormat(MailboxAddress address, ref ImapResponse response)
         {
-            var name = address.Name.AsAsciiSpan();
             var parts = address.Address.Split('@');
             var user = parts[0].AsAsciiSpan();
             var host = parts[1].AsAsciiSpan();
             response.Append(LexiConstants.OpenParenthesis);
-            response.Append(LexiConstants.DoubleQuote);
-            response.Append(name);
-            response.Append(LexiConstants.DoubleQuote);
+            if (address.Name != null)
+            {
+                var name = address.Name.AsAsciiSpan();
+                response.Append(LexiConstants.DoubleQuote);
+                response.Append(name);
+                response.Append(LexiConstants.DoubleQuote);
+            } else
+            {
+                response.Append(LexiConstants.Nil);
+            }
             response.AppendSpace();
             response.Append(LexiConstants.Nil);
             response.AppendSpace();
@@ -124,40 +145,40 @@ namespace Meel.Parsing
             switch(month)
             {
                 case 1:
-                    result = LexiConstants.January;
+                    result = January;
                     break;
                 case 2:
-                    result = LexiConstants.February;
+                    result = February;
                     break;
                 case 3:
-                    result = LexiConstants.March;
+                    result = March;
                     break;
                 case 4:
-                    result = LexiConstants.April;
+                    result = April;
                     break;
                 case 5:
-                    result = LexiConstants.May;
+                    result = May;
                     break;
                 case 6:
-                    result = LexiConstants.June;
+                    result = June;
                     break;
                 case 7:
-                    result = LexiConstants.July;
+                    result = July;
                     break;
                 case 8:
-                    result = LexiConstants.August;
+                    result = August;
                     break;
                 case 9:
-                    result = LexiConstants.September;
+                    result = September;
                     break;
                 case 10:
-                    result = LexiConstants.October;
+                    result = October;
                     break;
                 case 11:
-                    result = LexiConstants.November;
+                    result = November;
                     break;
                 case 12:
-                    result = LexiConstants.December;
+                    result = December;
                     break;
                 default:
                     result = ReadOnlySpan<byte>.Empty;

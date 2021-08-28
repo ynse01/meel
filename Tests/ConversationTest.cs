@@ -54,13 +54,18 @@ namespace Meel.Tests
             for (uint i = 1; i < 17; i++)
             {
                 var message = new MimeMessage();
-                station.AppendToMailbox(mailbox, new ImapMessage(message, i, MessageFlags.Seen, 0));
+                station.AppendToMailbox(mailbox, new ImapMessage(message, i, MessageFlags.Seen, 4286));
             }
             station.AppendToMailbox(mailbox, new ImapMessage(null, 17, MessageFlags.Recent, 0));
             station.AppendToMailbox(mailbox, new ImapMessage(null, 18, MessageFlags.Recent, 0));
             var message12 = mailbox.GetMessage(12);
-            message12.Message.Headers.Add(HeaderId.Date, DateTime.Now.ToString());
-            message12.Message.Headers.Add(HeaderId.From, "Terry Gray");
+            message12.InternalDate = new DateTime(1996, 7, 17, 2, 44, 25);
+            message12.Message.Headers.Clear();
+            message12.Message.Headers.Add(HeaderId.Date, "17-Jul-1996 02:44:25 -0700");
+            message12.Message.Headers.Add(HeaderId.From, "\"Terry Gray\" <gray@cac.washington.edu>");
+            message12.Message.Headers.Add(HeaderId.To, "imap@cac.washington.edu");
+            message12.Message.Headers.Add(HeaderId.Cc, "minutes@CNRI.Reston.VA.US; \"John Klensin\" <KLENSIN@MIT.EDU>");
+            message12.Message.Subject = "IMAP4rev1 WG mtg summary and minutes";
             var input = new[] { 
                 "a001 login mrc secret",
                 "a002 select inbox",
@@ -79,7 +84,7 @@ namespace Meel.Tests
                 @"* OK [PERMANENTFLAGS (\Answered \Flagged \Deleted \Seen \Draft)]",
                 "* OK [UIDVALIDITY 3857529045] UIDs valid",
                 "a002 OK [READ-WRITE] SELECT completed",
-                "* 12 FETCH (FLAGS (\\Seen) INTERNALDATE \"17-Jul-1996 02:44:25 - 0700\" RFC822.SIZE 4286 ENVELOPE(\"Wed, 17 Jul 1996 02:23:25 -0700 (PDT)\" \"IMAP4rev1 WG mtg summary and minutes\" ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((NIL NIL \"imap\" \"cac.washington.edu\")) ((NIL NIL \"minutes\" \"CNRI.Reston.VA.US\") (\"John Klensin\" NIL \"KLENSIN\" \"MIT.EDU\")) NIL NIL \"<B27397-0100000@cac.washington.edu>\") BODY(\"TEXT\" \"PLAIN\"(\"CHARSET\" \"US-ASCII\") NIL NIL \"7BIT\" 3028 92))",
+                "* 12 FETCH (FLAGS (\\Seen) INTERNALDATE \"17-Jul-1996 02:44:25 +0200\" RFC822.SIZE 4286 ENVELOPE (\"17 Jul 1996 02:23:25 +0200 (CET)\" \"IMAP4rev1 WG mtg summary and minutes\" ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((\"Terry Gray\" NIL \"gray\" \"cac.washington.edu\")) ((NIL NIL \"imap\" \"cac.washington.edu\")) ((NIL NIL \"minutes\" \"CNRI.Reston.VA.US\") (\"John Klensin\" NIL \"KLENSIN\" \"MIT.EDU\")) NIL NIL \"<B27397-0100000@cac.washington.edu>\") BODY(\"TEXT\" \"PLAIN\"(\"CHARSET\" \"US-ASCII\") NIL NIL \"7BIT\" 3028 92))",
                 "a003 OK FETCH completed",
                 "* 12 FETCH (BODY[HEADER] {342}",
                 "Date: Wed, 17 Jul 1996 02:23:25 -0700 (PDT)",
